@@ -1,5 +1,5 @@
 [root]
-name = "rust_sdl"
+name = "rusty-smeg"
 version = "0.1.0"
 dependencies = [
  "gl 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -6,6 +6,9 @@ use sdl2::{Sdl, EventPump};
 use sdl2::video::{GLContext, Window};
 use sdl2::VideoSubsystem;
 
+use std::os::raw::c_void;
+use std::mem::size_of;
+
 pub struct Screen {
 	window: Window,
 	video: VideoSubsystem,
@@ -37,7 +40,7 @@ impl Screen {
 			} else {
 				println!("Could not load {}", s);
 			}
-			ptr as *const std::os::raw::c_void
+			ptr as *const c_void
 		});
 
 		println!("OpenGL Context: {}.{}", video.gl_attr().context_major_version(), video.gl_attr().context_minor_version());
@@ -46,6 +49,18 @@ impl Screen {
 		Screen {
 			window, video, gl_context, sdl_context
 		}
+	}
+
+	pub fn event_pump(&self) -> EventPump {
+		self.sdl_context.event_pump().unwrap()
+	}
+
+	//
+	// OpenGL
+	//
+
+	pub fn set_viewport(width: i32, height: i32) {
+		unsafe { gl::Viewport(0, 0, width, height) };
 	}
 
 	pub fn clear_colour(&self, red: f32, green: f32, blue: f32) {
@@ -60,7 +75,84 @@ impl Screen {
 		self.window.gl_swap_window();
 	}
 
-	pub fn event_pump(&self) -> EventPump {
-		self.sdl_context.event_pump().unwrap()
+	// VBO
+
+	pub fn generate_vertex_buffer_object(&self, vertices: &Vec<f32>) -> u32 {
+		let mut vbo = 0;
+		unsafe {
+			gl::GenBuffers(1, &mut vbo);
+		}
+		self.bind_vertex_buffer_object(vbo, vertices);
+		println!("Generating vertex buffer object: {}", vbo);
+		return vbo;
+	} 
+
+	pub fn bind_vertex_buffer_object(&self, vbo: u32, vertices: &Vec<f32>) {
+		unsafe {
+			gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+			{
+				gl::BufferData(gl::ARRAY_BUFFER, (std::mem::size_of::<f32>() * vertices.len()) as isize ,
+				               vertices.as_ptr() as *const std::os::raw::c_void, gl::STATIC_DRAW);
+			}
+			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+		}
+	}
+
+	// VAO
+
+	pub fn generate_vertex_array_object(&self, vbo: u32) -> u32 {
+		let mut vao = 0;
+		unsafe {
+			gl::GenVertexArrays(1, &mut vao);
+		}
+		self.bind_vertex_array_object(vbo, vao);
+		println!("Generating vertex array object: {}", vao);
+		return vao;
+	}
+
+	pub fn bind_vertex_array_object(&self, vbo: u32, vao: u32) {
+		unsafe {
+			gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+			gl::BindVertexArray(vao);
+			{
+				// Layout, Size, Type, Normalized, Stride, Offset
+				let size = 8 * std::mem::size_of::<f32>() as i32;
+				gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, size, std::ptr::null());
+				gl::EnableVertexAttribArray(0);
+
+				// Colour
+				gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
+				gl::EnableVertexAttribArray(1);
+
+				// Tex Coord
+				gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
+				gl::EnableVertexAttribArray(2);
+			}
+			gl::BindVertexArray(0);
+			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+		}
+	}
+
+	// EBO
+
+	pub fn generate_element_buffer_object(&self, indices: &Vec<u16>) -> u32 {
+		let mut ebo = 0;
+		unsafe {
+			gl::GenBuffers(1, &mut ebo);
+		}
+		self.bind_element_buffer_object(ebo, indices);
+		println!("Generating element buffer: {}", ebo);
+		return ebo;
+	}  
+
+	pub fn bind_element_buffer_object(&self, ebo: u32, indices: &Vec<u16>) {
+		unsafe {
+			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+			{
+				gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (size_of::<u16>() * indices.len()) as isize,
+				               indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
+			}
+			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+		}
 	}
 }

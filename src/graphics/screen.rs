@@ -6,6 +6,8 @@ use sdl2::{Sdl, EventPump};
 use sdl2::video::{GLContext, Window};
 use sdl2::VideoSubsystem;
 
+use math::matrix4::Matrix4;
+
 use std::str;
 use std::ffi::CString;
 use std::os::raw::c_void;
@@ -162,9 +164,11 @@ impl Screen {
 
 	// Draw
 
-	pub fn draw(&self, vbo: u32, vao: u32, ebo: u32, program: u32) {
+	pub fn draw(&self, vbo: u32, vao: u32, ebo: u32, program: u32, translation: &Matrix4) {
 		unsafe {
 			gl::UseProgram(program);
+
+			gl::UniformMatrix4fv(self.get_uniform_location(program, "translate"), 1, gl::FALSE, translation.data.as_ptr());
 
 			gl::BindVertexArray(vao);
 			{
@@ -239,5 +243,16 @@ impl Screen {
 			}
 			return program;
 		}
+	}
+
+	fn get_uniform_location(&self, program: u32, name: &str) -> i32 {
+		let location;
+		unsafe {
+			location = gl::GetUniformLocation(program, CString::new(name).unwrap().as_ptr());
+		}
+		if location == -1 {
+			panic!("Could not find shader's {} uniform location for: {}", program, name);
+		}
+		return location;
 	}
 }

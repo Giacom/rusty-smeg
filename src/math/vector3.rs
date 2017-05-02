@@ -2,7 +2,7 @@
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-struct Vector3 {
+pub struct Vector3 {
 	x: f32,
 	y: f32,
 	z: f32

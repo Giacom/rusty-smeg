@@ -1,8 +1,8 @@
 const SIZE: usize = 4 * 4;
 
 #[derive(Debug, PartialEq)]
-struct Matrix4 {
-	data: [f32; SIZE]
+pub struct Matrix4 {
+	pub data: [f32; SIZE]
 }
 
 impl Matrix4 {
@@ -15,6 +15,13 @@ impl Matrix4 {
 		              0.0, 1.0, 0.0, 0.0,
 		              0.0, 0.0, 1.0, 0.0,
 		              0.0, 0.0, 0.0, 1.0])
+	}
+
+	pub fn translation(x: f32, y: f32, z: f32) -> Matrix4 {
+		Matrix4::new([1.0, 0.0, 0.0, 0.0,
+		              0.0, 1.0, 0.0, 0.0,
+		              0.0, 0.0, 1.0, 0.0,
+		              x,   y,   z,   1.0])
 	}
 
 	pub fn ortho(right: f32, left: f32, top: f32, bottom: f32, far: f32, near: f32) -> Matrix4 {

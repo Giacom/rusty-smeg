@@ -8,20 +8,22 @@ mod graphics;
 mod math;
 
 use graphics::screen::Screen;
+use math::matrix4::Matrix4;
 
 // Shader sources
 static VS_SRC: &'static str =
-   "#version 330 core\n\
-	in vec2 position;\n\
+	"#version 330 core\n\
+	layout(location = 0) in vec3 position;\n
+	uniform mat4 translate;
 	void main() {\n\
-	   gl_Position = vec4(position, 0.0, 1.0);\n\
+		gl_Position = translate * vec4(position, 1.0);\n\
 	}";
 
 static FS_SRC: &'static str =
    "#version 330 core\n\
 	out vec4 out_color;\n\
 	void main() {\n\
-	   out_color = vec4(1.0, 1.0, 1.0, 1.0);\n\
+		out_color = vec4(1.0, 1.0, 1.0, 1.0);\n\
 	}";
 
 fn main() {
@@ -46,6 +48,8 @@ fn main() {
 	let ebo = screen.generate_element_buffer_object(&indices);
 	let program = screen.generate_shader_program(VS_SRC, FS_SRC);
 
+	let mut test = -1.0;
+	let mut translation = Matrix4::translation(0.1, 0.1, 0.0);
 
 	'main: loop {
 
@@ -64,8 +68,10 @@ fn main() {
 		screen.clear_colour(0.0, float_green, 0.0);
 		screen.clear();
 		
-		screen.draw(vbo, vao, ebo, program);
+		screen.draw(vbo, vao, ebo, program, &translation);
 
 		screen.swap_buffer();
+		test += 0.005;
+		translation = Matrix4::translation(test, 0.1, 0.0);
 	}
 }

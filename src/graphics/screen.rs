@@ -35,7 +35,7 @@ impl Screen {
 		}
 
 		let gl_context = window.gl_create_context().unwrap();
-    	window.gl_make_current(&gl_context).unwrap();
+		window.gl_make_current(&gl_context).unwrap();
 
 		gl::load_with(|s| {
 			let ptr = video.gl_get_proc_address(s);
@@ -96,7 +96,7 @@ impl Screen {
 			gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 			{
 				gl::BufferData(gl::ARRAY_BUFFER, (std::mem::size_of::<f32>() * vertices.len()) as isize ,
-				               vertices.as_ptr() as *const std::os::raw::c_void, gl::STATIC_DRAW);
+							   vertices.as_ptr() as *const std::os::raw::c_void, gl::STATIC_DRAW);
 			}
 			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 		}
@@ -154,7 +154,7 @@ impl Screen {
 			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
 			{
 				gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (size_of::<u16>() * indices.len()) as isize,
-				               indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
+							   indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
 			}
 			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
 		}

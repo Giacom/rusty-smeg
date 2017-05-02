@@ -2,6 +2,7 @@
 name = "rusty-smeg"
 version = "0.1.0"
 authors = ["Giacom <giacomand@gmail.com>"]
+build = "build.rs"
 
 [dependencies]
 sdl2 = "0.29.1"

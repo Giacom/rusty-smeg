@@ -49,6 +49,14 @@ impl Screen {
 			ptr as *const c_void
 		});
 
+		unsafe {
+			gl::Enable(gl::BLEND);
+			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+
+			//gl::Enable(gl:CULL_FACE);
+			//gl::Enable(gl::DEPTH_TEST);
+		}
+
 		println!("OpenGL Context: {}.{}", video.gl_attr().context_major_version(), video.gl_attr().context_minor_version());
 		println!("OpenGL Profile: {:?}", video.gl_attr().context_profile());
 		
@@ -122,17 +130,17 @@ impl Screen {
 			gl::BindVertexArray(vao);
 			{
 				// Layout, Size, Type, Normalized, Stride, Offset
-				let size = 3 * std::mem::size_of::<f32>() as i32;
+				let size = 8 * std::mem::size_of::<f32>() as i32;
 				gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, size, std::ptr::null());
 				gl::EnableVertexAttribArray(0);
 
 				// // Colour
-				// gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
-				// gl::EnableVertexAttribArray(1);
+				gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
+				gl::EnableVertexAttribArray(1);
 
 				// // Tex Coord
-				// gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
-				// gl::EnableVertexAttribArray(2);
+				gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
+				gl::EnableVertexAttribArray(2);
 			}
 			gl::BindVertexArray(0);
 			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -141,7 +149,7 @@ impl Screen {
 
 	// EBO
 
-	pub fn generate_element_buffer_object(&self, indices: &Vec<u16>) -> u32 {
+	pub fn generate_element_buffer_object(&self, indices: &Vec<GLushort>) -> u32 {
 		let mut ebo = 0;
 		unsafe {
 			gl::GenBuffers(1, &mut ebo);
@@ -151,11 +159,11 @@ impl Screen {
 		return ebo;
 	}  
 
-	pub fn bind_element_buffer_object(&self, ebo: u32, indices: &Vec<u16>) {
+	pub fn bind_element_buffer_object(&self, ebo: u32, indices: &Vec<GLushort>) {
 		unsafe {
 			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
 			{
-				gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (size_of::<u16>() * indices.len()) as isize,
+				gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (size_of::<GLushort>() * indices.len()) as isize,
 							   indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
 			}
 			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
@@ -164,25 +172,67 @@ impl Screen {
 
 	// Draw
 
-	pub fn draw(&self, vbo: u32, vao: u32, ebo: u32, program: u32, translation: &Matrix4) {
+	pub fn draw(&self, vbo: u32, vao: u32, ebo: u32, program: u32, texture: u32, indices: i32, translation: &Matrix4) {
 		unsafe {
+			gl::ActiveTexture(gl::TEXTURE0);
+
 			gl::UseProgram(program);
-
-			gl::UniformMatrix4fv(self.get_uniform_location(program, "translate"), 1, gl::FALSE, translation.data.as_ptr());
-
-			gl::BindVertexArray(vao);
+			gl::BindTexture(gl::TEXTURE_2D, texture);
 			{
-				gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+				gl::Uniform1i(self.get_uniform_location(program, "ourTexture"), 0);
+				// gl::UniformMatrix4fv(self.get_uniform_location(program, "translate"), 1, gl::FALSE, translation.data.as_ptr());
+
+				gl::BindVertexArray(vao);
 				{
-					gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+					gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 					{
-						gl::DrawElements(gl::TRIANGLES, 3, gl::UNSIGNED_SHORT, std::ptr::null());
+						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+						{
+							gl::DrawElements(gl::TRIANGLES, indices, gl::UNSIGNED_SHORT, std::ptr::null());
+						}
+						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
 					}
-					gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+					gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 				}
-				gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+				gl::BindVertexArray(0);
 			}
-			gl::BindVertexArray(0);
+			//gl::BindTexture(gl::TEXTURE_2D, 0);
+		}
+	}
+
+	// Textures
+
+	pub fn generate_texture(&self, width: i32, height: i32, rgba_data: Vec<u8>) -> u32 {
+		let mut texture = 0u32;
+		unsafe {
+			gl::GenTextures(1, &mut texture);
+
+			println!("Generating texture.");
+			self.get_errors();
+
+			gl::BindTexture(gl::TEXTURE_2D, texture);
+			{
+				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // X wrapping
+				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32); // Y wrapping
+
+				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32); // Far away
+				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32); // Close up
+				gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width, height, 0, gl::RGBA, gl::UNSIGNED_BYTE, rgba_data.as_ptr() as *const c_void);
+			}
+			gl::BindTexture(gl::TEXTURE_2D, 0);
+		}
+		return texture;
+	}
+
+	pub fn get_errors(&self) {
+		unsafe {
+			loop {
+				let code = gl::GetError();
+				if code == gl::NO_ERROR {
+					break;
+				}
+				println!("OpenGL Error Code: {}", code);
+			}
 		}
 	}
 

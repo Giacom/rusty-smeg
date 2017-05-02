@@ -1,6 +1,10 @@
 pub extern crate sdl2;
 pub extern crate gl;
+pub extern crate image;
 
+use std::path::Path;
+
+use image::GenericImage;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
@@ -11,36 +15,56 @@ use graphics::screen::Screen;
 use math::matrix4::Matrix4;
 
 // Shader sources
-static VS_SRC: &'static str =
-	"#version 330 core\n\
-	layout(location = 0) in vec3 position;\n
-	uniform mat4 translate;
-	void main() {\n\
-		gl_Position = translate * vec4(position, 1.0);\n\
-	}";
+static FS_SRC: &str =
+"#version 330 core
 
-static FS_SRC: &'static str =
-   "#version 330 core\n\
-	out vec4 out_color;\n\
-	void main() {\n\
-		out_color = vec4(1.0, 1.0, 1.0, 1.0);\n\
-	}";
+in vec3 ourColor;
+in vec2 TexCoord;
+
+out vec4 color;
+
+uniform sampler2D ourTexture;
+
+void main()
+{
+	color = texture(ourTexture, TexCoord);
+	color.rgb *= ourColor;
+}";
+
+static VS_SRC: &str =
+"#version 330 core
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 color;
+layout (location = 2) in vec2 texCoord;
+
+out vec3 ourColor;
+out vec2 TexCoord;
+
+uniform mat4 translate;
+
+void main()
+{
+	gl_Position = vec4(position.x, position.y, position.z, 1.0);
+	TexCoord = texCoord;
+	ourColor = color;
+};";
 
 fn main() {
-
 	let vertex_data = vec![
-		0.0,  0.5, 0.0,
-		0.5, -0.5, 0.0,
-		-0.5, -0.5, 0.0
+		-0.5, -0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 1.0,
+		-0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0,
+		0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0,
+		0.5, -0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0
 	];
 
-	let indices: Vec<u16> = vec![
-		0, 1, 2
+	let indices: Vec<gl::types::GLushort> = vec![
+		0, 1, 2,
+		2, 3, 0
 	];
 
 	let screen = Screen::new(800, 600);
 
-	let mut green = 0;
 	let mut event_pump = screen.event_pump();
 
 	let vbo = screen.generate_vertex_buffer_object(&vertex_data);
@@ -48,8 +72,19 @@ fn main() {
 	let ebo = screen.generate_element_buffer_object(&indices);
 	let program = screen.generate_shader_program(VS_SRC, FS_SRC);
 
-	let mut test = -1.0;
-	let mut translation = Matrix4::translation(0.1, 0.1, 0.0);
+	let image = image::open(&Path::new("res/duck.png",)).unwrap();
+	let image_buffer = image.to_rgba();
+	let (width, height) = image.dimensions();
+
+	println!("{}, {}", width, height);
+
+	let data = image_buffer.into_vec();
+	let texture = screen.generate_texture(width as i32, height as i32, data);
+
+	// let mut test = -1.0;
+	let translation = Matrix4::translation(0.0, 0.0, 0.0);
+	
+	screen.clear_colour(0.39, 0.58, 0.92);
 
 	'main: loop {
 
@@ -62,16 +97,11 @@ fn main() {
 			}
 		}
 
-		green = (green + 1) % (255);
-		let float_green = green as f32 / (255.0);
-
-		screen.clear_colour(0.0, float_green, 0.0);
 		screen.clear();
 		
-		screen.draw(vbo, vao, ebo, program, &translation);
+		screen.draw(vbo, vao, ebo, program, texture, indices.len() as i32, &translation);
 
 		screen.swap_buffer();
-		test += 0.005;
-		translation = Matrix4::translation(test, 0.1, 0.0);
+		// translation = Matrix4::translation(test, 0.1, 0.0);
 	}
 }

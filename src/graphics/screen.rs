@@ -120,17 +120,17 @@ impl Screen {
 			gl::BindVertexArray(vao);
 			{
 				// Layout, Size, Type, Normalized, Stride, Offset
-				let size = 8 * std::mem::size_of::<f32>() as i32;
+				let size = 3 * std::mem::size_of::<f32>() as i32;
 				gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, size, std::ptr::null());
 				gl::EnableVertexAttribArray(0);
 
-				// Colour
-				gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
-				gl::EnableVertexAttribArray(1);
+				// // Colour
+				// gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
+				// gl::EnableVertexAttribArray(1);
 
-				// Tex Coord
-				gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
-				gl::EnableVertexAttribArray(2);
+				// // Tex Coord
+				// gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
+				// gl::EnableVertexAttribArray(2);
 			}
 			gl::BindVertexArray(0);
 			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -157,6 +157,28 @@ impl Screen {
 				               indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
 			}
 			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+		}
+	}
+
+	// Draw
+
+	pub fn draw(&self, vbo: u32, vao: u32, ebo: u32, program: u32) {
+		unsafe {
+			gl::UseProgram(program);
+
+			gl::BindVertexArray(vao);
+			{
+				gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+				{
+					gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+					{
+						gl::DrawElements(gl::TRIANGLES, 3, gl::UNSIGNED_SHORT, std::ptr::null());
+					}
+					gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+				}
+				gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+			}
+			gl::BindVertexArray(0);
 		}
 	}
 
@@ -191,6 +213,7 @@ impl Screen {
 				gl::GetShaderInfoLog(shader, len, std::ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
 				panic!("{}", str::from_utf8(&buf).ok().expect("ShaderInfoLog not valid utf8"));
 			}
+			println!("Compiled shader {}: {}", shader, src);
 		}
 		return shader
 	}

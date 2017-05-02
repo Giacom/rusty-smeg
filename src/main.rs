@@ -8,6 +8,28 @@ mod graphics;
 
 use graphics::screen::Screen;
 
+// Vertex data
+static VERTEX_DATA: [f32; 6] = [
+     0.0,  0.5,
+     0.5, -0.5,
+    -0.5, -0.5
+];
+
+// Shader sources
+static VS_SRC: &'static str =
+   "#version 330\n\
+    in vec2 position;\n\
+    void main() {\n\
+       gl_Position = vec4(position, 0.0, 1.0);\n\
+    }";
+
+static FS_SRC: &'static str =
+   "#version 330\n\
+    out vec4 out_color;\n\
+    void main() {\n\
+       out_color = vec4(1.0, 1.0, 1.0, 1.0);\n\
+    }";
+
 fn main() {
 
     let screen = Screen::new(800, 600);

@@ -34,22 +34,11 @@ impl Screen {
 		let gl_context = window.gl_create_context().unwrap();
 		window.gl_make_current(&gl_context).unwrap();
 
-		gl::load_with(|s| {
-			let ptr = video.gl_get_proc_address(s);
-			if !ptr.is_null() {
-				println!("Loaded {}", s);
-			} else {
-				println!("Could not load {}", s);
-			}
-			ptr as *const c_void
-		});
-
-
 		println!("OpenGL Context: {}.{}", video.gl_attr().context_major_version(), video.gl_attr().context_minor_version());
 		println!("OpenGL Profile: {:?}", video.gl_attr().context_profile());
 
 		let renderer = OpenGLRenderer();
-		renderer.initialise();
+		renderer.initialise(&video);
 		renderer.set_viewport(width as i32, height as i32);
 		
 		Screen {

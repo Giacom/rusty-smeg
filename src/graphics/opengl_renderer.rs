@@ -1,4 +1,7 @@
+pub extern crate term_painter;
+
 use gl;
+use sdl2;
 
 use gl::types::*;
 
@@ -11,10 +14,24 @@ use std::ffi::CString;
 use std::os::raw::c_void;
 use std::mem::size_of;
 
+use self::term_painter::ToStyle;
+use self::term_painter::Color::{Green, Red};
+
 pub struct OpenGLRenderer();
 
 impl OpenGLRenderer {
-	pub fn initialise(&self) {
+	pub fn initialise(&self, video: &sdl2::VideoSubsystem) {
+		println!("OpenGL Procs Found:");
+		gl::load_with(|s| {
+			let ptr = video.gl_get_proc_address(s);
+			if !ptr.is_null() {
+				println!("\t[{}] {}", Green.paint("\u{2713}"), s);
+			} else {
+				println!("\t[{}] {}", Red.paint("\u{2717}"), s);
+			}
+			ptr as *const c_void
+		});
+
 		unsafe {
 			gl::Enable(gl::BLEND);
 			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
@@ -154,6 +171,7 @@ impl OpenGLRenderer {
 		let mut texture = TextureID(0);
 		unsafe {
 			gl::GenTextures(1, &mut texture.0);
+			
 			self.get_errors();
 
 			gl::BindTexture(gl::TEXTURE_2D, texture.0);
@@ -178,7 +196,7 @@ impl OpenGLRenderer {
 				if code == gl::NO_ERROR {
 					break;
 				}
-				println!("OpenGL Error Code: {}", code);
+				println!("{}: Code ({})", Red.paint("GL_ERROR"), code);
 			}
 		}
 	}
@@ -214,7 +232,7 @@ impl OpenGLRenderer {
 				gl::GetShaderInfoLog(shader, len, std::ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
 				panic!("{}", str::from_utf8(&buf).ok().expect("ShaderInfoLog not valid utf8"));
 			}
-			println!("Compiled shader {}: {}", shader, src);
+			println!("Compiled shader {}:\n{}", shader, Green.paint(src));
 		}
 		return ShaderID(shader);
 	}

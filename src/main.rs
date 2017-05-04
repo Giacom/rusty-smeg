@@ -76,8 +76,6 @@ fn main() {
 	let image_buffer = image.to_rgba();
 	let (width, height) = image.dimensions();
 
-	println!("{}, {}", width, height);
-
 	let data = image_buffer.into_vec();
 	let texture = screen.renderer().generate_texture(width as i32, height as i32, data);
 
@@ -100,6 +98,5 @@ fn main() {
 		screen.renderer().draw(vbo, vao, ebo, program, texture, indices.len() as i32, &Matrix4::translation(0.2, 0.2, -0.5));
 
 		screen.swap_buffer();
-		// translation = Matrix4::translation(test, 0.1, 0.0);
 	}
 }

@@ -36,6 +36,8 @@ impl OpenGLRenderer {
 		unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); }
 	}
 
+	// Draw
+
 	pub fn draw(&self, vbo: VertexBufferObjectID, vao: VertexArrayObjectID, ebo: ElementBufferObjectID,
 	            program: ProgramID, texture: TextureID, indices: i32, translation: &Matrix4) {
 		unsafe {
@@ -152,8 +154,6 @@ impl OpenGLRenderer {
 		let mut texture = TextureID(0);
 		unsafe {
 			gl::GenTextures(1, &mut texture.0);
-
-			println!("Generating texture.");
 			self.get_errors();
 
 			gl::BindTexture(gl::TEXTURE_2D, texture.0);
@@ -167,6 +167,7 @@ impl OpenGLRenderer {
 			}
 			gl::BindTexture(gl::TEXTURE_2D, 0);
 		}
+		println!("Generating {:?}", texture);
 		return texture;
 	}
 

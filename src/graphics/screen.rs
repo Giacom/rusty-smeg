@@ -1,33 +1,28 @@
 use gl;
-use std;
 use sdl2;
 
 use sdl2::{Sdl, EventPump};
 use sdl2::video::{GLContext, Window};
 use sdl2::VideoSubsystem;
 
-use math::matrix4::Matrix4;
+use graphics::opengl_renderer::OpenGLRenderer;
 
-use std::str;
-use std::ffi::CString;
 use std::os::raw::c_void;
-use std::mem::size_of;
-
-use gl::types::*;
 
 pub struct Screen {
 	window: Window,
 	video: VideoSubsystem,
+	renderer: OpenGLRenderer,
 	gl_context: GLContext,
 	sdl_context: Sdl
 }
 
 impl Screen {
-	pub fn new(width: u32, height: u32) -> Screen {
+	pub fn new(title: &str, width: u32, height: u32) -> Screen {
 		let sdl_context = sdl2::init().unwrap();
 		let video = sdl_context.video().unwrap();
 
-		let window = video.window("rust", width, height).position_centered().opengl().build().unwrap();
+		let window = video.window(title, width, height).position_centered().opengl().build().unwrap();
 		{
 			let gl_attr = video.gl_attr();
 			gl_attr.set_context_major_version(3);
@@ -49,260 +44,28 @@ impl Screen {
 			ptr as *const c_void
 		});
 
-		unsafe {
-			gl::Enable(gl::BLEND);
-			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
-
-			//gl::Enable(gl:CULL_FACE);
-			//gl::Enable(gl::DEPTH_TEST);
-		}
 
 		println!("OpenGL Context: {}.{}", video.gl_attr().context_major_version(), video.gl_attr().context_minor_version());
 		println!("OpenGL Profile: {:?}", video.gl_attr().context_profile());
+
+		let renderer = OpenGLRenderer();
+		renderer.initialise();
+		renderer.set_viewport(width as i32, height as i32);
 		
 		Screen {
-			window, video, gl_context, sdl_context
+			window, video, renderer, gl_context, sdl_context
 		}
+	}
+	
+	pub fn renderer(&self) -> &OpenGLRenderer {
+		&self.renderer
 	}
 
 	pub fn event_pump(&self) -> EventPump {
 		self.sdl_context.event_pump().unwrap()
 	}
 
-	//
-	// OpenGL
-	//
-
-	pub fn set_viewport(width: i32, height: i32) {
-		unsafe { gl::Viewport(0, 0, width, height) };
-	}
-
-	pub fn clear_colour(&self, red: f32, green: f32, blue: f32) {
-		unsafe { gl::ClearColor(red, green, blue, 1.0); }
-	}
-
-	pub fn clear(&self) {
-		unsafe { gl::Clear(gl::COLOR_BUFFER_BIT); }
-	}
-
 	pub fn swap_buffer(&self) {
 		self.window.gl_swap_window();
-	}
-
-	// VBO
-
-	pub fn generate_vertex_buffer_object(&self, vertices: &Vec<f32>) -> u32 {
-		let mut vbo = 0;
-		unsafe {
-			gl::GenBuffers(1, &mut vbo);
-		}
-		self.bind_vertex_buffer_object(vbo, vertices);
-		println!("Generating vertex buffer object: {}", vbo);
-		return vbo;
-	} 
-
-	pub fn bind_vertex_buffer_object(&self, vbo: u32, vertices: &Vec<f32>) {
-		unsafe {
-			gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-			{
-				gl::BufferData(gl::ARRAY_BUFFER, (std::mem::size_of::<f32>() * vertices.len()) as isize ,
-							   vertices.as_ptr() as *const std::os::raw::c_void, gl::STATIC_DRAW);
-			}
-			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-		}
-	}
-
-	// VAO
-
-	pub fn generate_vertex_array_object(&self, vbo: u32) -> u32 {
-		let mut vao = 0;
-		unsafe {
-			gl::GenVertexArrays(1, &mut vao);
-		}
-		self.bind_vertex_array_object(vbo, vao);
-		println!("Generating vertex array object: {}", vao);
-		return vao;
-	}
-
-	pub fn bind_vertex_array_object(&self, vbo: u32, vao: u32) {
-		unsafe {
-			gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-			gl::BindVertexArray(vao);
-			{
-				// Layout, Size, Type, Normalized, Stride, Offset
-				let size = 8 * std::mem::size_of::<f32>() as i32;
-				gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, size, std::ptr::null());
-				gl::EnableVertexAttribArray(0);
-
-				// // Colour
-				gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
-				gl::EnableVertexAttribArray(1);
-
-				// // Tex Coord
-				gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
-				gl::EnableVertexAttribArray(2);
-			}
-			gl::BindVertexArray(0);
-			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-		}
-	}
-
-	// EBO
-
-	pub fn generate_element_buffer_object(&self, indices: &Vec<GLushort>) -> u32 {
-		let mut ebo = 0;
-		unsafe {
-			gl::GenBuffers(1, &mut ebo);
-		}
-		self.bind_element_buffer_object(ebo, indices);
-		println!("Generating element buffer: {}", ebo);
-		return ebo;
-	}  
-
-	pub fn bind_element_buffer_object(&self, ebo: u32, indices: &Vec<GLushort>) {
-		unsafe {
-			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-			{
-				gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (size_of::<GLushort>() * indices.len()) as isize,
-							   indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
-			}
-			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-		}
-	}
-
-	// Draw
-
-	pub fn draw(&self, vbo: u32, vao: u32, ebo: u32, program: u32, texture: u32, indices: i32, translation: &Matrix4) {
-		unsafe {
-			gl::ActiveTexture(gl::TEXTURE0);
-
-			gl::UseProgram(program);
-			gl::BindTexture(gl::TEXTURE_2D, texture);
-			{
-				gl::Uniform1i(self.get_uniform_location(program, "ourTexture"), 0);
-				// gl::UniformMatrix4fv(self.get_uniform_location(program, "translate"), 1, gl::FALSE, translation.data.as_ptr());
-
-				gl::BindVertexArray(vao);
-				{
-					gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-					{
-						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-						{
-							gl::DrawElements(gl::TRIANGLES, indices, gl::UNSIGNED_SHORT, std::ptr::null());
-						}
-						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-					}
-					gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-				}
-				gl::BindVertexArray(0);
-			}
-			//gl::BindTexture(gl::TEXTURE_2D, 0);
-		}
-	}
-
-	// Textures
-
-	pub fn generate_texture(&self, width: i32, height: i32, rgba_data: Vec<u8>) -> u32 {
-		let mut texture = 0u32;
-		unsafe {
-			gl::GenTextures(1, &mut texture);
-
-			println!("Generating texture.");
-			self.get_errors();
-
-			gl::BindTexture(gl::TEXTURE_2D, texture);
-			{
-				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // X wrapping
-				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32); // Y wrapping
-
-				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32); // Far away
-				gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32); // Close up
-				gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width, height, 0, gl::RGBA, gl::UNSIGNED_BYTE, rgba_data.as_ptr() as *const c_void);
-			}
-			gl::BindTexture(gl::TEXTURE_2D, 0);
-		}
-		return texture;
-	}
-
-	pub fn get_errors(&self) {
-		unsafe {
-			loop {
-				let code = gl::GetError();
-				if code == gl::NO_ERROR {
-					break;
-				}
-				println!("OpenGL Error Code: {}", code);
-			}
-		}
-	}
-
-	// Shaders
-
-	pub fn generate_shader_program(&self, vertex_shader_source: &str, fragment_shader_source: &str) -> u32 {
-		let vertex_shader = self.compile_shader(vertex_shader_source, gl::VERTEX_SHADER);
-		let fragment_shader = self.compile_shader(fragment_shader_source, gl::FRAGMENT_SHADER);
-		return self.link_program(vertex_shader, fragment_shader);
-	}
-
-	fn compile_shader(&self, src: &str, shader_type: GLenum) -> GLuint {
-		let shader;
-		unsafe {
-			shader = gl::CreateShader(shader_type);
-
-			// Attempt to compile the shader
-			let c_str = CString::new(src.as_bytes()).unwrap();
-			gl::ShaderSource(shader, 1, &c_str.as_ptr(), std::ptr::null());
-			gl::CompileShader(shader);
-
-			// Get the compile status
-			let mut status = gl::FALSE as GLint;
-			gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status);
-
-			// Fail on error
-			if status != (gl::TRUE as GLint) {
-				let mut len = 0;
-				gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len);
-				let mut buf = Vec::with_capacity(len as usize);
-				buf.set_len((len as usize) - 1); // subtract 1 to skip the trailing null character
-				gl::GetShaderInfoLog(shader, len, std::ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-				panic!("{}", str::from_utf8(&buf).ok().expect("ShaderInfoLog not valid utf8"));
-			}
-			println!("Compiled shader {}: {}", shader, src);
-		}
-		return shader
-	}
-
-	fn link_program(&self, vs: GLuint, fs: GLuint) -> GLuint {
-		unsafe {
-			let program = gl::CreateProgram();
-			gl::AttachShader(program, vs);
-			gl::AttachShader(program, fs);
-			gl::LinkProgram(program);
-			// Get the link status
-			let mut status = gl::FALSE as GLint;
-			gl::GetProgramiv(program, gl::LINK_STATUS, &mut status);
-
-			// Fail on error
-			if status != (gl::TRUE as GLint) {
-				let mut len: GLint = 0;
-				gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
-				let mut buf = Vec::with_capacity(len as usize);
-				buf.set_len((len as usize) - 1); // subtract 1 to skip the trailing null character
-				gl::GetProgramInfoLog(program, len, std::ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-				panic!("{}", str::from_utf8(&buf).ok().expect("ProgramInfoLog not valid utf8"));
-			}
-			return program;
-		}
-	}
-
-	fn get_uniform_location(&self, program: u32, name: &str) -> i32 {
-		let location;
-		unsafe {
-			location = gl::GetUniformLocation(program, CString::new(name).unwrap().as_ptr());
-		}
-		if location == -1 {
-			panic!("Could not find shader's {} uniform location for: {}", program, name);
-		}
-		return location;
 	}
 }

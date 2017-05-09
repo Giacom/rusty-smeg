@@ -1,5 +1,5 @@
 [package]
-name = "rusty-smeg"
+name = "rusty_smeg"
 version = "0.1.0"
 authors = ["Giacom <giacomand@gmail.com>"]
 build = "build.rs"

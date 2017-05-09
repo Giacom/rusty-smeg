@@ -1,11 +1,8 @@
 [root]
-name = "rusty-smeg"
+name = "game"
 version = "0.1.0"
 dependencies = [
- "gl 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "image 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sdl2 0.29.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "term-painter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rusty_smeg 0.1.0",
 ]
 
 [[package]]
@@ -227,6 +224,16 @@ dependencies = [
  "libc 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "num_cpus 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rusty_smeg"
+version = "0.1.0"
+dependencies = [
+ "gl 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2 0.29.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "term-painter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

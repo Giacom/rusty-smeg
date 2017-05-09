@@ -1,20 +1,16 @@
-pub extern crate sdl2;
-pub extern crate gl;
-pub extern crate image;
 
 use std::path::Path;
+
+use gl;
+use image;
 
 use image::GenericImage;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
-mod graphics;
-mod math;
-
 use graphics::screen::Screen;
 use math::matrix4::Matrix4;
 use math::vector3::Vector3;
-
 
 // Shader sources
 static VS_SRC: &str = include_str!("../res/shader.vert");
@@ -23,7 +19,7 @@ static FS_SRC: &str = include_str!("../res/shader.frag");
 // NOTE: Build for windows without console
 // cargo rustc -- -Clink-args="-Wl,--subsystem,windows"
 
-fn main() {
+pub fn run() {
 	let vertex_data = vec![
 		0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
 		-0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right

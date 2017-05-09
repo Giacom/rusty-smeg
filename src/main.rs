@@ -60,8 +60,8 @@ fn main() {
 	let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 1000.0, -1000.0);
 	let model_size = Vector3::new(256.0, 256.0, 1.0);
 	
-	let model = Matrix4::position_and_scale(position, model_size);
-	let model2 = Matrix4::position_and_scale(Vector3::new(50.0, 50.0, 1.0), model_size);
+	let model = Matrix4::translate_and_scale(position, model_size);
+	let model2 = Matrix4::translate_and_scale(Vector3::new(50.0, 50.0, 1.0), model_size);
 
 	let view = Matrix4::identity();
 

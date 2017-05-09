@@ -33,7 +33,7 @@ impl Matrix4 {
 		              0.0, 0.0, 0.0, 1.0])
 	}
 
-	pub fn position_and_scale(pos: Vector3, scale: Vector3) -> Matrix4 {
+	pub fn translate_and_scale(pos: Vector3, scale: Vector3) -> Matrix4 {
 		Matrix4::new([scale.x,    0.0,        0.0,     0.0,
 		              0.0,        scale.y,    0.0,     0.0,
 		              0.0,        0.0,        scale.z, 0.0,

@@ -6,7 +6,7 @@ use sdl2;
 use gl::types::*;
 
 use math::matrix4::Matrix4;
-use graphics::object_ids::*;
+use graphics::opengl::object_ids::*;
 
 use std;
 use std::str;
@@ -25,9 +25,9 @@ impl OpenGLRenderer {
 		gl::load_with(|s| {
 			let ptr = video.gl_get_proc_address(s);
 			if !ptr.is_null() {
-				println!("\t[{}] {}", Green.paint("\u{2713}"), s);
+				println!("\t[{}] {}", Green.paint("Y"), s);
 			} else {
-				println!("\t[{}] {}", Red.paint("\u{2717}"), s);
+				println!("\t[{}] {}", Red.paint("N"), s);
 			}
 			ptr as *const c_void
 		});

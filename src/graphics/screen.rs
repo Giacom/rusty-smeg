@@ -5,7 +5,7 @@ use sdl2::{Sdl, EventPump};
 use sdl2::video::{GLContext, Window};
 use sdl2::VideoSubsystem;
 
-use graphics::opengl_renderer::OpenGLRenderer;
+use graphics::opengl::renderer::OpenGLRenderer;
 
 use std::os::raw::c_void;
 

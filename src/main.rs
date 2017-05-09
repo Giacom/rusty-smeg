@@ -20,6 +20,9 @@ use math::vector3::Vector3;
 static VS_SRC: &str = include_str!("../res/shader.vert");
 static FS_SRC: &str = include_str!("../res/shader.frag");
 
+// NOTE: Build for windows without console
+// cargo rustc -- -Clink-args="-Wl,--subsystem,windows"
+
 fn main() {
 	let vertex_data = vec![
 		0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
@@ -44,7 +47,7 @@ fn main() {
 	let ebo = screen.renderer().generate_element_buffer_object(&indices);
 	let program = screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
 
-	let image = image::open(&Path::new("res/duck.png",)).unwrap();
+	let image = image::load_from_memory(include_bytes!("../res/duck.png")).unwrap();
 	let image_buffer = image.to_rgba();
 	let (width, height) = image.dimensions();
 

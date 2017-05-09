@@ -1,5 +1,7 @@
 const SIZE: usize = 4 * 4;
 
+use math::vector3::Vector3;
+
 #[derive(Debug, PartialEq)]
 pub struct Matrix4 {
 	pub data: [f32; SIZE]
@@ -17,18 +19,32 @@ impl Matrix4 {
 		              0.0, 0.0, 0.0, 1.0])
 	}
 
-	pub fn translation(x: f32, y: f32, z: f32) -> Matrix4 {
+	pub fn translation(a: Vector3) -> Matrix4 {
 		Matrix4::new([1.0, 0.0, 0.0, 0.0,
 		              0.0, 1.0, 0.0, 0.0,
 		              0.0, 0.0, 1.0, 0.0,
-		              x,   y,   z,   1.0])
+		              a.x, a.y, a.z, 1.0])
+	}
+
+	pub fn scale(a: Vector3) -> Matrix4 {
+		Matrix4::new([a.x, 0.0, 0.0, 0.0,
+		              0.0, a.y, 0.0, 0.0,
+		              0.0, 0.0, a.z, 0.0,
+		              0.0, 0.0, 0.0, 1.0])
+	}
+
+	pub fn position_and_scale(pos: Vector3, scale: Vector3) -> Matrix4 {
+		Matrix4::new([scale.x,    0.0,        0.0,     0.0,
+		              0.0,        scale.y,    0.0,     0.0,
+		              0.0,        0.0,        scale.z, 0.0,
+		              pos.x,      pos.y,      pos.z,   1.0])
 	}
 
 	pub fn ortho(right: f32, left: f32, top: f32, bottom: f32, far: f32, near: f32) -> Matrix4 {
-		Matrix4::new([2.0 / (right - left),     0.0,                  0.0,                   -((right + left) / (right - left)),
-		              0.0,                      2.0 / (top - bottom), 0.0,                   -((top + bottom) / (top - bottom)),
-		              0.0,                      0.0,                  -(2.0 / (far - near)), -((far + near) / (far - near)),
-		              0.0,                      0.0,                  0.0,                   1.0])
+		Matrix4::new([2.0 / (right - left),     0.0,                  0.0,                   0.0,
+		              0.0,                      2.0 / (top - bottom), 0.0,                   0.0,
+		              0.0,                      0.0,                  -(2.0 / (far - near)), 0.0,
+		              -((right + left) / (right - left)), -((top + bottom) / (top - bottom)), -((far + near) / (far - near)), 1.0])
 	}
 }
 

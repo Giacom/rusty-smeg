@@ -3,9 +3,9 @@ use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vector3 {
-	x: f32,
-	y: f32,
-	z: f32
+	pub x: f32,
+	pub y: f32,
+	pub z: f32
 }
 
 impl Vector3 {
@@ -43,7 +43,7 @@ impl Mul<f32> for Vector3 {
 	type Output = Vector3;
 
 	fn mul(self, rhs: f32) -> Vector3 {
-		Vector3::new(rhs * self.x, rhs * self.y, rhs * self.z)
+		Vector3::new(self.x * rhs, self.y * rhs, self.z * rhs)
 	}
 }
 

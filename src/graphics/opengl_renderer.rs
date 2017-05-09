@@ -36,7 +36,7 @@ impl OpenGLRenderer {
 			gl::Enable(gl::BLEND);
 			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
-			gl::Enable(gl::CULL_FACE);
+			// gl::Enable(gl::CULL_FACE);
 			gl::Enable(gl::DEPTH_TEST);
 		}
 	}
@@ -56,7 +56,8 @@ impl OpenGLRenderer {
 	// Draw
 
 	pub fn draw(&self, vbo: VertexBufferObjectID, vao: VertexArrayObjectID, ebo: ElementBufferObjectID,
-	            program: ProgramID, texture: TextureID, indices: i32, translation: &Matrix4) {
+	            program: ProgramID, texture: TextureID, indices: i32,
+				perspective: &Matrix4, view: &Matrix4, model: &Matrix4) {
 		unsafe {
 			gl::ActiveTexture(gl::TEXTURE0);
 
@@ -64,7 +65,9 @@ impl OpenGLRenderer {
 			gl::BindTexture(gl::TEXTURE_2D, texture.0);
 			{
 				gl::Uniform1i(self.get_uniform_location(program.0, "ourTexture").0, 0);
-				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "translate").0, 1, gl::FALSE, translation.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "perspective").0, 1, gl::FALSE, perspective.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "view").0, 1, gl::FALSE, view.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "model").0, 1, gl::FALSE, model.data.as_ptr());
 
 				gl::BindVertexArray(vao.0);
 				{

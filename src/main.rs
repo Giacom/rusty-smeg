@@ -13,42 +13,12 @@ mod math;
 
 use graphics::screen::Screen;
 use math::matrix4::Matrix4;
+use math::vector3::Vector3;
+
 
 // Shader sources
-static FS_SRC: &str =
-"#version 330 core
-
-in vec3 ourColor;
-in vec2 TexCoord;
-
-out vec4 color;
-
-uniform sampler2D ourTexture;
-
-void main()
-{
-	color = texture(ourTexture, TexCoord);
-	color.rgb *= ourColor;
-}";
-
-static VS_SRC: &str =
-"#version 330 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 color;
-layout (location = 2) in vec2 texCoord;
-
-out vec3 ourColor;
-out vec2 TexCoord;
-
-uniform mat4 translate;
-
-void main()
-{
-	gl_Position = translate * vec4(position.x, position.y, position.z, 1.0);
-	TexCoord = texCoord;
-	ourColor = color;
-}";
+static VS_SRC: &str = include_str!("../res/shader.vert");
+static FS_SRC: &str = include_str!("../res/shader.frag");
 
 fn main() {
 	let vertex_data = vec![
@@ -63,7 +33,9 @@ fn main() {
 		2, 3, 0
 	];
 
-	let screen = Screen::new("Rusty Smeg Demo", 800, 600);
+	let screen_width = 800;
+	let screen_height = 600;
+	let screen = Screen::new("Rusty Smeg Demo", screen_width, screen_height);
 
 	let mut event_pump = screen.event_pump();
 
@@ -81,6 +53,18 @@ fn main() {
 
 	screen.renderer().clear_colour(0.39, 0.58, 0.92);
 
+	let screen_half = Vector3::new((screen_width / 2) as f32, (screen_height / 2) as f32, 0.0);
+
+	let position = Vector3::zero();
+
+	let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 1000.0, -1000.0);
+	let model_size = Vector3::new(256.0, 256.0, 1.0);
+	
+	let model = Matrix4::position_and_scale(position, model_size);
+	let model2 = Matrix4::position_and_scale(Vector3::new(50.0, 50.0, 1.0), model_size);
+
+	let view = Matrix4::identity();
+
 	'main: loop {
 
 		for event in event_pump.poll_iter() {
@@ -94,8 +78,8 @@ fn main() {
 
 		screen.renderer().clear();
 		
-		screen.renderer().draw(vbo, vao, ebo, program, texture, indices.len() as i32, &Matrix4::identity());
-		screen.renderer().draw(vbo, vao, ebo, program, texture, indices.len() as i32, &Matrix4::translation(0.2, 0.2, -0.5));
+		screen.renderer().draw(vbo, vao, ebo, program, texture, indices.len() as i32, &perspective, &view, &model);
+		screen.renderer().draw(vbo, vao, ebo, program, texture, indices.len() as i32, &perspective, &view, &model2);
 
 		screen.swap_buffer();
 	}

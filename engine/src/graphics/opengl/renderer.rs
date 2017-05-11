@@ -6,6 +6,7 @@ use sdl2;
 use gl::types::*;
 
 use math::matrix4::Matrix4;
+use graphics::material::Material;
 use graphics::opengl::object_ids::*;
 
 use std;
@@ -55,27 +56,25 @@ impl OpenGLRenderer {
 
 	// Draw
 
-	pub fn draw(&self, vbo: VertexBufferObjectID, vao: VertexArrayObjectID, ebo: ElementBufferObjectID,
-	            program: ProgramID, texture: TextureID, indices: i32,
-				perspective: &Matrix4, view: &Matrix4, model: &Matrix4) {
+	pub fn draw(&self, material: &Material, texture: TextureID, perspective: &Matrix4, view: &Matrix4, model: &Matrix4) {
 		unsafe {
 			gl::ActiveTexture(gl::TEXTURE0);
 
-			gl::UseProgram(program.0);
+			gl::UseProgram(material.program.0);
 			gl::BindTexture(gl::TEXTURE_2D, texture.0);
 			{
-				gl::Uniform1i(self.get_uniform_location(program.0, "ourTexture").0, 0);
-				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "perspective").0, 1, gl::FALSE, perspective.data.as_ptr());
-				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "view").0, 1, gl::FALSE, view.data.as_ptr());
-				gl::UniformMatrix4fv(self.get_uniform_location(program.0, "model").0, 1, gl::FALSE, model.data.as_ptr());
+				gl::Uniform1i(self.get_uniform_location(material.program.0, "ourTexture").0, 0);
+				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "perspective").0, 1, gl::FALSE, perspective.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "view").0, 1, gl::FALSE, view.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "model").0, 1, gl::FALSE, model.data.as_ptr());
 
-				gl::BindVertexArray(vao.0);
+				gl::BindVertexArray(material.vao.0);
 				{
-					gl::BindBuffer(gl::ARRAY_BUFFER, vbo.0);
+					gl::BindBuffer(gl::ARRAY_BUFFER, material.vbo.0);
 					{
-						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo.0);
+						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, material.ebo.0);
 						{
-							gl::DrawElements(gl::TRIANGLES, indices, gl::UNSIGNED_SHORT, std::ptr::null());
+							gl::DrawElements(gl::TRIANGLES, material.indices.len() as i32, gl::UNSIGNED_SHORT, std::ptr::null());
 						}
 						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
 					}

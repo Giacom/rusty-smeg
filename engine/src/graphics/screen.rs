@@ -10,6 +10,9 @@ use graphics::opengl::renderer::OpenGLRenderer;
 use std::os::raw::c_void;
 
 pub struct Screen {
+	width: u32,
+	height: u32,
+
 	window: Window,
 	video: VideoSubsystem,
 	renderer: OpenGLRenderer,
@@ -42,8 +45,12 @@ impl Screen {
 		renderer.set_viewport(width as i32, height as i32);
 		
 		Screen {
-			window, video, renderer, gl_context, sdl_context
+			width, height, window, video, renderer, gl_context, sdl_context
 		}
+	}
+
+	pub fn screen_size(&self) -> (u32, u32) {
+		(self.width, self.height)
 	}
 	
 	pub fn renderer(&self) -> &OpenGLRenderer {

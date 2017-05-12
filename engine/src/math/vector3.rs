@@ -1,5 +1,5 @@
 
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Mul, Sub, AddAssign, SubAssign, MulAssign};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vector3 {
@@ -31,6 +31,12 @@ impl Add for Vector3 {
 	}
 }
 
+impl AddAssign for Vector3 {
+	fn add_assign(&mut self, rhs: Vector3) {
+		*self = *self + rhs;
+	}
+}
+
 impl Sub for Vector3 {
 	type Output = Vector3;
 
@@ -39,11 +45,23 @@ impl Sub for Vector3 {
 	}
 }
 
+impl SubAssign for Vector3 {
+	fn sub_assign(&mut self, rhs: Vector3) {
+		*self = *self - rhs;
+	}
+}
+
 impl Mul<f32> for Vector3 {
 	type Output = Vector3;
 
 	fn mul(self, rhs: f32) -> Vector3 {
 		Vector3::new(self.x * rhs, self.y * rhs, self.z * rhs)
+	}
+}
+
+impl MulAssign<f32> for Vector3 {
+	fn mul_assign(&mut self, rhs: f32) {
+		*self = *self * rhs;
 	}
 }
 
@@ -56,6 +74,15 @@ fn test_add() {
 }
 
 #[test]
+fn test_add_assign() {
+	let a = Vector3::one();
+	let b = Vector3::new(1.0, 2.0, 3.0);
+	let c = a;
+	c += b;
+	assert_eq!(Vector3::new(2.0, 3.0, 4.0), c);
+}
+
+#[test]
 fn test_sub() {
 	let a = Vector3::one();
 	let b = Vector3::new(0.5, -0.5, 1.0);
@@ -63,8 +90,26 @@ fn test_sub() {
 }
 
 #[test]
+fn test_sub_assign() {
+	let a = Vector3::one();
+	let b = Vector3::new(0.5, -0.5, 1.0);
+	let c = a;
+	c -= b;
+	assert_eq!(Vector3::new(0.5, 1.5, 0.0), c);
+}
+
+#[test]
 fn test_multiply() {
 	let a = Vector3::new(2.0, 3.0, 1.5);
 	let b = 2.0;
 	assert_eq!(Vector3::new(4.0, 6.0, 3.0), a * b);
+}
+
+#[test]
+fn test_multiply_assign() {
+	let a = Vector3::new(2.0, 3.0, 1.5);
+	let b = 2.0;
+	let c = a;
+	c *= b;
+	assert_eq!(Vector3::new(4.0, 6.0, 3.0), c);
 }

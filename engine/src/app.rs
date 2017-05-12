@@ -2,6 +2,7 @@
 use gl;
 use image;
 
+use std::f32;
 use image::GenericImage;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -81,22 +82,55 @@ impl App {
 
 		let position = Vector3::zero();
 
-		let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 1000.0, -1000.0);
+		// let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 100.0, 0.1);
+		let perspective = Matrix4::perspective(90.0, 4.0 / 3.0, 1000.0, 0.1);;
+
 		let model_size = Vector3::new(256.0, 256.0, 1.0);
 		
 		let model = Matrix4::translate_and_scale(position, model_size);
-		let model2 = Matrix4::translate_and_scale(Vector3::new(50.0, 50.0, 1.0), model_size);
+		let model2 = Matrix4::translate_and_scale(Vector3::new(100.0, 50.0, -1.0), model_size);
 
-		let view = Matrix4::identity();
+		let mut camera_pos = Vector3::new(0.0, 0.0, 20.0);
+		let mut view = Matrix4::translation(camera_pos);
 
 		'main: loop {
 
 			self.services.get::<Time>().ticks += 1;
 
+			let ticks = self.services.get::<Time>().ticks;
+
+			view = Matrix4::translation(camera_pos);
+			println!("{:?}", camera_pos);
+
 			for event in event_pump.poll_iter() {
 				match event {
 					Event::Quit { .. } | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
 						break 'main;
+					},
+					Event::KeyDown { keycode, .. } => {
+						let mut movement = Vector3::zero();
+						match keycode {
+							Some(Keycode::W) => {
+								movement.y = -1.0;
+							},
+							Some(Keycode::S) => {
+								movement.y = 1.0;
+							},
+							Some(Keycode::A) => {
+								movement.x = 1.0;
+							},
+							Some(Keycode::D) => {
+								movement.x = -1.0;
+							},
+							Some(Keycode::Q) => {
+								movement.z = 1.0;
+							},
+							Some(Keycode::E) => {
+								movement.z = -1.0;
+							}
+							_ => {}
+						}
+						camera_pos += movement;
 					},
 					_ => { }
 				}

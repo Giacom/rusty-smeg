@@ -12,6 +12,9 @@ use graphics::screen::Screen;
 use math::matrix4::Matrix4;
 use math::vector3::Vector3;
 
+use services::service::ServiceContainer;
+use services::time::Time;
+
 // Shader sources
 static VS_SRC: &str = include_str!("../res/shader.vert");
 static FS_SRC: &str = include_str!("../res/shader.frag");
@@ -21,20 +24,25 @@ static FS_SRC: &str = include_str!("../res/shader.frag");
 
 pub struct App {
 	active_scene: Option<Scene>,
-	screen: Screen
+	screen: Screen,
+	pub services: ServiceContainer
 }
 
 impl App {
 	pub fn new(title: &str, width: u32, height: u32) -> App {
 		let screen = Screen::new(title, width, height);
-		App { active_scene: None, screen: screen }
+		let mut services = ServiceContainer::new();
+
+		services.set(Time::new());
+		
+		App { active_scene: None, screen: screen, services: services }
 	}
 
 	pub fn set_scene(&mut self, scene: Scene) {
 		self.active_scene = Some(scene);
 	}
 
-	pub fn run(&self) {
+	pub fn run(&mut self) {
 		
 		let material = {
 			let vertex_data = vec![
@@ -44,7 +52,7 @@ impl App {
 				0.5, -0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0, // Bottom Left
 			];
 
-			let indices: Vec<gl::types::GLushort> = vec![
+			let indices = vec![
 				0, 1, 2,
 				2, 3, 0
 			];
@@ -82,6 +90,8 @@ impl App {
 		let view = Matrix4::identity();
 
 		'main: loop {
+
+			self.services.get::<Time>().ticks += 1;
 
 			for event in event_pump.poll_iter() {
 				match event {

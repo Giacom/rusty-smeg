@@ -45,7 +45,7 @@ impl App {
 
 	pub fn run(&mut self) {
 		
-		let material = {
+		let sprite_material = {
 			let vertex_data = vec![
 				0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
 				-0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right
@@ -66,14 +66,73 @@ impl App {
 			Material::new(vbo, vao, ebo, program, vertex_data, indices)
 		};
 
-		let mut event_pump = self.screen.event_pump();
+		let box_material = {
+			let vertex_data = vec![
+				// Front
+				0.5, 0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
+				-0.5, 0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right
+				-0.5, -0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 1.0, // Top Left
+				0.5, -0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0, // Bottom Left
 
-		let image = image::load_from_memory(include_bytes!("../res/duck.png")).unwrap();
-		let image_buffer = image.to_rgba();
-		let (image_width, image_height) = image.dimensions();
+				// Back
+				0.5, 0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
+				-0.5, 0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right
+				-0.5, -0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 1.0, // Top Left
+				0.5, -0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0, // Bottom Left
+			];
 
-		let data = image_buffer.into_vec();
-		let texture = self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data);
+			let indices = vec![
+				// Back
+				3, 2, 1,
+				1, 0, 3,
+
+				// Front
+				4, 5, 6,
+				6, 7, 4,
+
+				// Left
+				1, 2, 6,
+				6, 5, 1,
+
+				// Right
+				4, 7, 3,
+				3, 0, 4,
+
+				// Top
+				0, 1, 5,
+				5, 4, 0,
+
+				// Bottom
+				7, 6, 2,
+				2, 3, 7,
+			];
+
+			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
+			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
+			let ebo = self.screen.renderer().generate_element_buffer_object(&indices);
+			let program = self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
+
+			Material::new(vbo, vao, ebo, program, vertex_data, indices)
+		};
+
+
+		let sprite_texture = {
+			let image = image::load_from_memory(include_bytes!("../res/duck.png")).unwrap();
+			let image_buffer = image.to_rgba();
+			let data = image_buffer.into_vec();
+			let (image_width, image_height) = image.dimensions();
+
+			self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data)
+		};
+
+		let box_texture = {
+			let image = image::load_from_memory(include_bytes!("../res/duck_opaque.jpg")).unwrap();
+			let image_buffer = image.to_rgba();
+			let data = image_buffer.into_vec();
+			let (image_width, image_height) = image.dimensions();
+
+			self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data)
+		};
 
 		self.screen.renderer().clear_colour(0.39, 0.58, 0.92);
 
@@ -85,13 +144,17 @@ impl App {
 		// let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 100.0, 0.1);
 		let perspective = Matrix4::perspective(90.0, 4.0 / 3.0, 1000.0, 0.1);;
 
-		let model_size = Vector3::new(256.0, 256.0, 1.0);
+		let model_size = Vector3::new(256.0, 256.0, 256.0);
 		
 		let model = Matrix4::translate_and_scale(position, model_size);
 		let model2 = Matrix4::translate_and_scale(Vector3::new(100.0, 50.0, -1.0), model_size);
 
-		let mut camera_pos = Vector3::new(0.0, 0.0, 20.0);
+		let mut camera_pos = Vector3::new(0.0, 0.0, 500.0);
+		let mut camera_rot = Vector3::new(0.0, 0.0, 0.0);
+
 		let mut view = Matrix4::translation(camera_pos);
+
+		let mut event_pump = self.screen.event_pump();
 
 		'main: loop {
 
@@ -99,8 +162,10 @@ impl App {
 
 			let ticks = self.services.get::<Time>().ticks;
 
-			view = Matrix4::translation(camera_pos);
-			println!("{:?}", camera_pos);
+			view = Matrix4::translation_and_rotation(camera_pos, camera_rot);
+			println!("Pos: {:?} - Rot: {:?}", camera_pos, camera_rot);
+
+			camera_rot += Vector3::new(0.0, 0.1, 0.0);
 
 			for event in event_pump.poll_iter() {
 				match event {
@@ -109,28 +174,37 @@ impl App {
 					},
 					Event::KeyDown { keycode, .. } => {
 						let mut movement = Vector3::zero();
+						let mut rotation = Vector3::zero();
+						let sensitivity = 5.0;
 						match keycode {
 							Some(Keycode::W) => {
-								movement.y = -1.0;
+								movement.y = -sensitivity;
 							},
 							Some(Keycode::S) => {
-								movement.y = 1.0;
+								movement.y = sensitivity;
 							},
 							Some(Keycode::A) => {
-								movement.x = 1.0;
+								movement.x = sensitivity;
 							},
 							Some(Keycode::D) => {
-								movement.x = -1.0;
+								movement.x = -sensitivity;
 							},
 							Some(Keycode::Q) => {
-								movement.z = 1.0;
+								rotation.y = -sensitivity;
 							},
 							Some(Keycode::E) => {
-								movement.z = -1.0;
+								rotation.y = sensitivity;
+							},
+							Some(Keycode::LCtrl) => {
+								movement.z = sensitivity;
+							},
+							Some(Keycode::LShift) => {
+								movement.z = -sensitivity;
 							}
 							_ => {}
 						}
 						camera_pos += movement;
+						camera_rot += rotation;
 					},
 					_ => { }
 				}
@@ -138,8 +212,9 @@ impl App {
 
 			self.screen.renderer().clear();
 			
-			self.screen.renderer().draw(&material, texture, &perspective, &view, &model);
-			self.screen.renderer().draw(&material, texture, &perspective, &view, &model2);
+			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model);
+			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model2);
+			self.screen.renderer().draw(&box_material, box_texture, &perspective, &view, &model);
 
 			self.screen.swap_buffer();
 		}

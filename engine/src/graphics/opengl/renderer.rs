@@ -37,7 +37,7 @@ impl OpenGLRenderer {
 			gl::Enable(gl::BLEND);
 			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
-			// gl::Enable(gl::CULL_FACE);
+			gl::Enable(gl::CULL_FACE);
 			gl::Enable(gl::DEPTH_TEST);
 		}
 	}
@@ -245,6 +245,7 @@ impl OpenGLRenderer {
 			gl::AttachShader(program, vs.0);
 			gl::AttachShader(program, fs.0);
 			gl::LinkProgram(program);
+
 			// Get the link status
 			let mut status = gl::FALSE as GLint;
 			gl::GetProgramiv(program, gl::LINK_STATUS, &mut status);

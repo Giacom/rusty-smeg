@@ -52,8 +52,24 @@ impl Matrix4 {
 		
 		Matrix4::new([1.0 / (aspect * tan_half_fov), 0.0,                0.0,                          0.0,
 		              0.0,                           1.0 / tan_half_fov, 0.0,                          0.0,
-					  0.0,                           0.0,                far / (far - near),           1.0,
-					  0.0,                           0.0,                -(far * near) / (far - near), 0.0])
+		              0.0,                           0.0,                far / (far - near),           1.0,
+		              0.0,                           0.0,                -(far * near) / (far - near), 0.0])
+	}
+
+	pub fn rotation(euler: Vector3) -> Matrix4 {
+		let rot = f32::to_radians(euler.x);
+		Matrix4::new([1.0, 0.0, 0.0, 0.0,
+		              0.0, f32::cos(rot), f32::sin(rot), 0.0,
+		              0.0, -f32::sin(rot), f32::cos(rot), 0.0,
+		              0.0, 0.0, 0.0, 1.0])
+	}
+
+	pub fn translation_and_rotation(pos: Vector3, rotation: Vector3) -> Matrix4 {
+		let y = f32::to_radians(rotation.y);
+		Matrix4::new([f32::cos(y),   0.0,   -f32::sin(y), 0.0,
+		              0.0,           1.0,   0.0,          0.0,
+		              f32::sin(y),   0.0,   f32::cos(y),  0.0,
+		              pos.x,         pos.y, pos.z,        1.0])
 	}
 }
 

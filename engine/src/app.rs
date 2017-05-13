@@ -44,13 +44,16 @@ impl App {
 	}
 
 	pub fn run(&mut self) {
-		
+
 		let sprite_material = {
 			let vertex_data = vec![
-				0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
-				-0.5, 0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right
-				-0.5, -0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 1.0, // Top Left
-				0.5, -0.5, 0.0, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0, // Bottom Left
+				0.5, 0.5, 0.0, /* */ 1.0, 0.0,
+				-0.5, 0.5, 0.0, /* */ 0.0, 0.0,
+				-0.5, -0.5, 0.0, /* */ 0.0, 1.0,
+
+				-0.5, -0.5, 0.0, /* */ 0.0, 1.0,
+				0.5, -0.5, 0.0, /* */ 1.0, 1.0,
+				0.5, 0.5, 0.0, /* */ 1.0, 0.0,
 			];
 
 			let indices = vec![
@@ -60,59 +63,61 @@ impl App {
 
 			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
 			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
-			let ebo = self.screen.renderer().generate_element_buffer_object(&indices);
 			let program = self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
 
-			Material::new(vbo, vao, ebo, program, vertex_data, indices)
+			Material::new(vbo, vao, program, vertex_data, 5)
 		};
 
 		let box_material = {
 			let vertex_data = vec![
-				// Front
-				0.5, 0.5, 0.5, /* */ 1.0, 0.0, // Bottom Right
-				-0.5, 0.5, 0.5, /* */ 0.0, 0.0, // Top Right
-				-0.5, -0.5, 0.5, /* */ 0.0, 1.0, // Top Left
-				0.5, -0.5, 0.5,  /* */ 1.0, 1.0, // Bottom Left
+				-0.5, -0.5, -0.5,  0.0, 0.0,
+				0.5, -0.5, -0.5,  1.0, 0.0,
+				0.5,  0.5, -0.5,  1.0, 1.0,
+				0.5,  0.5, -0.5,  1.0, 1.0,
+				-0.5,  0.5, -0.5,  0.0, 1.0,
+				-0.5, -0.5, -0.5,  0.0, 0.0,
 
-				// Back
-				0.5, 0.5, -0.5, /* */ 1.0, 0.0, // Bottom Right
-				-0.5, 0.5, -0.5, /* */ 0.0, 0.0, // Top Right
-				-0.5, -0.5, -0.5, /* */ 0.0, 1.0, // Top Left
-				0.5, -0.5, -0.5, /* */ 1.0, 1.0, // Bottom Left
-			];
+				-0.5, -0.5,  0.5,  0.0, 0.0,
+				0.5, -0.5,  0.5,  1.0, 0.0,
+				0.5,  0.5,  0.5,  1.0, 1.0,
+				0.5,  0.5,  0.5,  1.0, 1.0,
+				-0.5,  0.5,  0.5,  0.0, 1.0,
+				-0.5, -0.5,  0.5,  0.0, 0.0,
 
-			let indices = vec![
-				// Back
-				3, 2, 1,
-				1, 0, 3,
+				-0.5,  0.5,  0.5,  1.0, 0.0,
+				-0.5,  0.5, -0.5,  1.0, 1.0,
+				-0.5, -0.5, -0.5,  0.0, 1.0,
+				-0.5, -0.5, -0.5,  0.0, 1.0,
+				-0.5, -0.5,  0.5,  0.0, 0.0,
+				-0.5,  0.5,  0.5,  1.0, 0.0,
 
-				// Front
-				4, 5, 6,
-				6, 7, 4,
+				0.5,  0.5,  0.5,  1.0, 0.0,
+				0.5,  0.5, -0.5,  1.0, 1.0,
+				0.5, -0.5, -0.5,  0.0, 1.0,
+				0.5, -0.5, -0.5,  0.0, 1.0,
+				0.5, -0.5,  0.5,  0.0, 0.0,
+				0.5,  0.5,  0.5,  1.0, 0.0,
 
-				// Left
-				1, 2, 6,
-				6, 5, 1,
+				-0.5, -0.5, -0.5,  0.0, 1.0,
+				0.5, -0.5, -0.5,  1.0, 1.0,
+				0.5, -0.5,  0.5,  1.0, 0.0,
+				0.5, -0.5,  0.5,  1.0, 0.0,
+				-0.5, -0.5,  0.5,  0.0, 0.0,
+				-0.5, -0.5, -0.5,  0.0, 1.0,
 
-				// Right
-				4, 7, 3,
-				3, 0, 4,
-
-				// Top
-				0, 1, 5,
-				5, 4, 0,
-
-				// Bottom
-				7, 6, 2,
-				2, 3, 7,
+				-0.5,  0.5, -0.5,  0.0, 1.0,
+				0.5,  0.5, -0.5,  1.0, 1.0,
+				0.5,  0.5,  0.5,  1.0, 0.0,
+				0.5,  0.5,  0.5,  1.0, 0.0,
+				-0.5,  0.5,  0.5,  0.0, 0.0,
+				-0.5,  0.5, -0.5,  0.0, 1.0
 			];
 
 			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
 			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
-			let ebo = self.screen.renderer().generate_element_buffer_object(&indices);
 			let program = self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
 
-			Material::new(vbo, vao, ebo, program, vertex_data, indices)
+			Material::new(vbo, vao, program, vertex_data, 5)
 		};
 
 
@@ -142,7 +147,7 @@ impl App {
 		let position = Vector3::zero();
 
 		// let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 100.0, 0.1);
-		let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 1000.0, 0.1);;
+		let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 100000.0, 0.1);;
 
 		let model_size = Vector3::new(256.0, 256.0, 256.0);
 		
@@ -150,23 +155,33 @@ impl App {
 		let model2 = Matrix4::translate_and_scale(Vector3::new(100.0, 50.0, -1.0), model_size);
 
 		let mut camera_pos = Vector3::new(0.0, 0.0, 500.0);
-		let mut object_rot = Vector3::new(0.0, 0.0, 0.0);
+		let mut camera_rot = Vector3::new(0.0, 0.0, 0.0);
 
 		let mut view = Matrix4::translation(camera_pos);
 
 		let mut event_pump = self.screen.event_pump();
 
+		let mut cube_positions = vec![];
+		{
+			let size = 2;
+			for x in -size..size {
+				for y in -size..size {
+					for z in -size..size {
+						cube_positions.push(Vector3::new(x as f32, y as f32, z as f32) * 256.0);
+					}
+				}
+			}
+		}
+
 		'main: loop {
 
 			self.services.get::<Time>().ticks += 1;
 
-			let ticks = self.services.get::<Time>().ticks;
-
 			// Hacky for now
-			view = Matrix4::translation_and_rotation(camera_pos, object_rot);
-			println!("Pos: {:?} - Rot: {:?}", camera_pos, object_rot);
+			view = Matrix4::translation_and_rotation(camera_pos, camera_rot);
+			println!("Pos: {:?} - Rot: {:?}", camera_pos, camera_rot);
 
-			object_rot += Vector3::new(0.0, 0.1, 0.0);
+			camera_rot += Vector3::new(0.0, 0.1, 0.0);
 
 			for event in event_pump.poll_iter() {
 				match event {
@@ -205,7 +220,7 @@ impl App {
 							_ => {}
 						}
 						camera_pos += movement;
-						object_rot += rotation;
+						camera_rot += rotation;
 					},
 					_ => { }
 				}
@@ -213,9 +228,13 @@ impl App {
 
 			self.screen.renderer().clear();
 			
+			for cube_position in &cube_positions {
+				let box_model = Matrix4::translate_and_scale(*cube_position, model_size);
+				self.screen.renderer().draw(&box_material, box_texture, &perspective, &view, &box_model);
+			}
+
 			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model);
 			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model2);
-			self.screen.renderer().draw(&box_material, box_texture, &perspective, &view, &model);
 
 			self.screen.swap_buffer();
 		}

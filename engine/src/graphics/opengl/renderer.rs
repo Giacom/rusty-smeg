@@ -63,20 +63,21 @@ impl OpenGLRenderer {
 			gl::UseProgram(material.program.0);
 			gl::BindTexture(gl::TEXTURE_2D, texture.0);
 			{
-				gl::Uniform1i(self.get_uniform_location(material.program.0, "ourTexture").0, 0);
-				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "perspective").0, 1, gl::FALSE, perspective.data.as_ptr());
-				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "view").0, 1, gl::FALSE, view.data.as_ptr());
-				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "model").0, 1, gl::FALSE, model.data.as_ptr());
+				
+				if let Ok(uniform) = self.get_uniform_location(material.program.0, "ourTexture") {
+					gl::Uniform1i(uniform.0, 0);
+				}
+
+				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "perspective").unwrap().0, 1, gl::FALSE, perspective.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "view").unwrap().0, 1, gl::FALSE, view.data.as_ptr());
+				gl::UniformMatrix4fv(self.get_uniform_location(material.program.0, "model").unwrap().0, 1, gl::FALSE, model.data.as_ptr());
 
 				gl::BindVertexArray(material.vao.0);
 				{
 					gl::BindBuffer(gl::ARRAY_BUFFER, material.vbo.0);
 					{
-						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, material.ebo.0);
-						{
-							gl::DrawElements(gl::TRIANGLES, material.indices.len() as i32, gl::UNSIGNED_SHORT, std::ptr::null());
-						}
-						gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+						gl::DrawArrays(gl::TRIANGLES, 0, material.vertices.len() as i32 / material.vertex_stride);
+						// gl::DrawArrays(gl::TRIANGLES, 0, 3);
 					}
 					gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 				}
@@ -137,29 +138,6 @@ impl OpenGLRenderer {
 			}
 			gl::BindVertexArray(0);
 			gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-		}
-	}
-
-	// EBO
-
-	pub fn generate_element_buffer_object(&self, indices: &Vec<GLushort>) -> ElementBufferObjectID {
-		let mut ebo = ElementBufferObjectID(0);
-		unsafe {
-			gl::GenBuffers(1, &mut ebo.0);
-		}
-		self.bind_element_buffer_object(ebo, indices);
-		println!("Generating {:?}", ebo);
-		return ebo;
-	}  
-
-	pub fn bind_element_buffer_object(&self, ebo: ElementBufferObjectID, indices: &Vec<GLushort>) {
-		unsafe {
-			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo.0);
-			{
-				gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (size_of::<GLushort>() * indices.len()) as isize,
-							   indices.as_ptr() as *const c_void, gl::STATIC_DRAW);
-			}
-			gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
 		}
 	}
 
@@ -259,14 +237,14 @@ impl OpenGLRenderer {
 		}
 	}
 
-	fn get_uniform_location(&self, program: u32, name: &str) -> UniformID {
+	fn get_uniform_location(&self, program: u32, name: &str) -> Result<UniformID, String> {
 		let location;
 		unsafe {
 			location = gl::GetUniformLocation(program, CString::new(name).unwrap().as_ptr());
 		}
 		if location == -1 {
-			panic!("Could not find shader's {} uniform location for: {}", program, name);
+			return Err(format!("Could not find shader's {} uniform location for: {}", program, name));
 		}
-		return UniformID(location);
+		return Ok(UniformID(location));
 	}
 }

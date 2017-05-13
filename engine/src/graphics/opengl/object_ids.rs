@@ -6,9 +6,6 @@ pub struct VertexBufferObjectID(pub u32);
 pub struct VertexArrayObjectID(pub u32);
 
 #[derive(Debug, Copy, Clone, Default)]
-pub struct ElementBufferObjectID(pub u32);
-
-#[derive(Debug, Copy, Clone, Default)]
 pub struct TextureID(pub u32);
 
 #[derive(Debug, Copy, Clone, Default)]

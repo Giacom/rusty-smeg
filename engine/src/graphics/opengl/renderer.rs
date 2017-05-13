@@ -37,7 +37,7 @@ impl OpenGLRenderer {
 			gl::Enable(gl::BLEND);
 			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
-			gl::Enable(gl::CULL_FACE);
+//			gl::Enable(gl::CULL_FACE);
 			gl::Enable(gl::DEPTH_TEST);
 		}
 	}
@@ -127,17 +127,13 @@ impl OpenGLRenderer {
 			gl::BindVertexArray(vao.0);
 			{
 				// Layout, Size, Type, Normalized, Stride, Offset
-				let size = 8 * std::mem::size_of::<f32>() as i32;
+				let size = 5 * std::mem::size_of::<f32>() as i32;
 				gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, size, std::ptr::null());
 				gl::EnableVertexAttribArray(0);
 
-				// // Colour
-				gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
+				// Tex Coord
+				gl::VertexAttribPointer(1, 2, gl::FLOAT, gl::FALSE, size, (3 * size_of::<f32>()) as *const c_void);
 				gl::EnableVertexAttribArray(1);
-
-				// // Tex Coord
-				gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, size, (6 * size_of::<f32>()) as *const c_void);
-				gl::EnableVertexAttribArray(2);
 			}
 			gl::BindVertexArray(0);
 			gl::BindBuffer(gl::ARRAY_BUFFER, 0);

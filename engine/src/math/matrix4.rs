@@ -49,7 +49,6 @@ impl Matrix4 {
 
 	pub fn perspective(fov: f32, aspect: f32, far: f32, near: f32) -> Matrix4 {
 		let tan_half_fov = f32::tan(f32::to_radians(fov) * 0.5);
-		
 		Matrix4::new([1.0 / (aspect * tan_half_fov), 0.0,                0.0,                          0.0,
 		              0.0,                           1.0 / tan_half_fov, 0.0,                          0.0,
 		              0.0,                           0.0,                far / (far - near),           1.0,

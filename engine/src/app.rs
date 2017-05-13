@@ -69,16 +69,16 @@ impl App {
 		let box_material = {
 			let vertex_data = vec![
 				// Front
-				0.5, 0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
-				-0.5, 0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right
-				-0.5, -0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 1.0, // Top Left
-				0.5, -0.5, 0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0, // Bottom Left
+				0.5, 0.5, 0.5, /* */ 1.0, 0.0, // Bottom Right
+				-0.5, 0.5, 0.5, /* */ 0.0, 0.0, // Top Right
+				-0.5, -0.5, 0.5, /* */ 0.0, 1.0, // Top Left
+				0.5, -0.5, 0.5,  /* */ 1.0, 1.0, // Bottom Left
 
 				// Back
-				0.5, 0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 0.0, // Bottom Right
-				-0.5, 0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 0.0, // Top Right
-				-0.5, -0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 0.0, 1.0, // Top Left
-				0.5, -0.5, -0.5, /* */ 1.0, 1.0, 1.0, /* */ 1.0, 1.0, // Bottom Left
+				0.5, 0.5, -0.5, /* */ 1.0, 0.0, // Bottom Right
+				-0.5, 0.5, -0.5, /* */ 0.0, 0.0, // Top Right
+				-0.5, -0.5, -0.5, /* */ 0.0, 1.0, // Top Left
+				0.5, -0.5, -0.5, /* */ 1.0, 1.0, // Bottom Left
 			];
 
 			let indices = vec![
@@ -142,7 +142,7 @@ impl App {
 		let position = Vector3::zero();
 
 		// let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 100.0, 0.1);
-		let perspective = Matrix4::perspective(90.0, 4.0 / 3.0, 1000.0, 0.1);;
+		let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 1000.0, 0.1);;
 
 		let model_size = Vector3::new(256.0, 256.0, 256.0);
 		
@@ -150,7 +150,7 @@ impl App {
 		let model2 = Matrix4::translate_and_scale(Vector3::new(100.0, 50.0, -1.0), model_size);
 
 		let mut camera_pos = Vector3::new(0.0, 0.0, 500.0);
-		let mut camera_rot = Vector3::new(0.0, 0.0, 0.0);
+		let mut object_rot = Vector3::new(0.0, 0.0, 0.0);
 
 		let mut view = Matrix4::translation(camera_pos);
 
@@ -162,10 +162,11 @@ impl App {
 
 			let ticks = self.services.get::<Time>().ticks;
 
-			view = Matrix4::translation_and_rotation(camera_pos, camera_rot);
-			println!("Pos: {:?} - Rot: {:?}", camera_pos, camera_rot);
+			// Hacky for now
+			view = Matrix4::translation_and_rotation(camera_pos, object_rot);
+			println!("Pos: {:?} - Rot: {:?}", camera_pos, object_rot);
 
-			camera_rot += Vector3::new(0.0, 0.1, 0.0);
+			object_rot += Vector3::new(0.0, 0.1, 0.0);
 
 			for event in event_pump.poll_iter() {
 				match event {
@@ -204,7 +205,7 @@ impl App {
 							_ => {}
 						}
 						camera_pos += movement;
-						camera_rot += rotation;
+						object_rot += rotation;
 					},
 					_ => { }
 				}

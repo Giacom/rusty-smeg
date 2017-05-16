@@ -59,11 +59,6 @@ impl App {
 				0.5, 0.5, 0.0, /* */ 1.0, 0.0,
 			];
 
-			let indices = vec![
-				0, 1, 2,
-				2, 3, 0
-			];
-
 			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
 			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
 			let program = self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
@@ -182,7 +177,7 @@ impl App {
 
 			// Hacky for now
 			view = Matrix4::translation_and_rotation(camera_pos, camera_rot);
-			println!("Pos: {:?} - Rot: {:?}", camera_pos, camera_rot);
+			// println!("Pos: {:?} - Rot: {:?}", camera_pos, camera_rot);
 
 			camera_rot += Vector3::new(0.0, 0.1, 0.0);
 

@@ -1,3 +1,4 @@
+use std;
 use gl;
 
 use graphics::opengl::renderer::OpenGLRenderer;
@@ -18,30 +19,29 @@ pub struct Screen {
 impl Screen {
 	pub fn new(title: &str, width: u32, height: u32) -> Screen {
 		let events_loop = EventsLoop::new();
+		let profile = glutin::GlProfile::Core;
 		let window = WindowBuilder::new()
 		                           .with_title(title)
 		                           .with_dimensions(width, height)
 		                           .with_vsync()
+								   .with_gl_profile(profile)
+								   .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 3)))
 		                           .build(&events_loop).unwrap();
-		{
-			// let gl_attr = video.gl_attr();
-			// gl_attr.set_context_major_version(3);
-			// gl_attr.set_context_minor_version(3);
-			// gl_attr.set_double_buffer(true);
-			// gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-		}
 
 		unsafe {
 			window.make_current()
 		}.unwrap();
-
-
-		// println!("OpenGL Context: {}.{}", video.gl_attr().context_major_version(), video.gl_attr().context_minor_version());
 		// println!("OpenGL Profile: {:?}", video.gl_attr().context_profile());
 
 		let renderer = OpenGLRenderer();
 		renderer.initialise(&window);
 		renderer.set_viewport(width as i32, height as i32);
+
+		let version = unsafe {
+			let data = std::ffi::CStr::from_ptr(gl::GetString(gl::VERSION) as *const _).to_bytes().to_vec();
+			String::from_utf8(data).unwrap()
+		};
+		println!("OpenGL Version: {:?} {}", profile, version);
 		
 		Screen {
 			width, height, window, renderer, events_loop

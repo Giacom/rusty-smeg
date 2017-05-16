@@ -77,7 +77,6 @@ impl OpenGLRenderer {
 					gl::BindBuffer(gl::ARRAY_BUFFER, material.vbo.0);
 					{
 						gl::DrawArrays(gl::TRIANGLES, 0, material.vertices.len() as i32 / material.vertex_stride);
-						// gl::DrawArrays(gl::TRIANGLES, 0, 3);
 					}
 					gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 				}

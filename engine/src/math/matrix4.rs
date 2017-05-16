@@ -1,4 +1,5 @@
-const SIZE: usize = 4 * 4;
+const DIMENSION: usize = 4;
+const SIZE: usize = DIMENSION * DIMENSION;
 
 use math::vector3::Vector3;
 
@@ -70,6 +71,28 @@ impl Matrix4 {
 		              f32::sin(y),   0.0,   f32::cos(y),  0.0,
 		              pos.x,         pos.y, pos.z,        1.0])
 	}
+
+	pub fn set(&mut self, row: usize, column: usize, value: f32) {
+		self.data[column + DIMENSION * row] = value;
+	}
+
+	pub fn get(&self, row: usize, column: usize) -> f32 {
+		self.data[column + DIMENSION * row]
+	}
+}
+
+#[test]
+fn test_get_and_set() {
+	let mut a = Matrix4::new([0.0, 0.1, 0.2, 0.3,
+	                          0.4, 0.5, 0.6, 0.7,
+	                          0.8, 0.9, 1.0, 1.1,
+	                          1.2, 1.3, 1.4, 1.5]);
+	assert_eq!(a.get(2, 3), 1.1);
+	assert_eq!(a.get(3, 2), 1.4);
+	assert_eq!(a.get(0, 2), 0.2);
+
+	a.set(3, 2, 100.0);
+	assert_eq!(a.get(3, 2), 100.0);
 }
 
 #[test]

@@ -147,9 +147,9 @@ impl App {
 		let position = Vector3::zero();
 
 		// let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 100.0, 0.1);
-		let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 100000.0, 0.1);;
+		let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 1000.0, 0.1);;
 
-		let model_size = Vector3::new(256.0, 256.0, 256.0);
+		let model_size = Vector3::new(32.0, 32.0, 32.0);
 		
 		let model = Matrix4::translate_and_scale(position, model_size);
 		let model2 = Matrix4::translate_and_scale(Vector3::new(100.0, 50.0, -1.0), model_size);
@@ -167,7 +167,7 @@ impl App {
 			for x in -size..size {
 				for y in -size..size {
 					for z in -size..size {
-						cube_positions.push(Vector3::new(x as f32, y as f32, z as f32) * 256.0);
+						cube_positions.push(Vector3::new(x as f32, y as f32, z as f32) * 32.0);
 					}
 				}
 			}

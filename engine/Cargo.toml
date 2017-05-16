@@ -2,10 +2,9 @@
 name = "rusty_smeg"
 version = "0.1.0"
 authors = ["Giacom <giacomand@gmail.com>"]
-build = "build.rs"
 
 [dependencies]
-sdl2 = "0.29.1"
+glutin = "0.8.0"
 gl = "0.6.1"
 image = "0.13.0"
 term-painter = "0.2"

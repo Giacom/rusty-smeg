@@ -1,7 +1,9 @@
 pub extern crate term_painter;
 
 use gl;
-use sdl2;
+use glutin;
+
+use glutin::Window;
 
 use gl::types::*;
 
@@ -21,10 +23,10 @@ use self::term_painter::Color::{Green, Red};
 pub struct OpenGLRenderer();
 
 impl OpenGLRenderer {
-	pub fn initialise(&self, video: &sdl2::VideoSubsystem) {
+	pub fn initialise(&self, window: &Window) {
 		println!("OpenGL Procs Found:");
 		gl::load_with(|s| {
-			let ptr = video.gl_get_proc_address(s);
+			let ptr = window.get_proc_address(s) as *const _;
 			if !ptr.is_null() {
 				println!("\t[{}] {}", Green.paint("Y"), s);
 			} else {

@@ -1,11 +1,10 @@
 
 use gl;
 use image;
+use glutin;
 
 use std::f32;
 use image::GenericImage;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
 
 use node_tree::scene::Scene;
 use graphics::material::Material;
@@ -15,6 +14,10 @@ use math::vector3::Vector3;
 
 use services::service::ServiceContainer;
 use services::time::Time;
+
+use glutin::Event;
+use glutin::Event::WindowEvent;
+use glutin::VirtualKeyCode;
 
 // Shader sources
 static VS_SRC: &str = include_str!("../res/shader.vert");
@@ -159,8 +162,6 @@ impl App {
 
 		let mut view = Matrix4::translation(camera_pos);
 
-		let mut event_pump = self.screen.event_pump();
-
 		let mut cube_positions = vec![];
 		{
 			let size = 2;
@@ -173,7 +174,9 @@ impl App {
 			}
 		}
 
-		'main: loop {
+
+		let mut running = true;
+		while running {
 
 			self.services.get::<Time>().ticks += 1;
 
@@ -183,48 +186,52 @@ impl App {
 
 			camera_rot += Vector3::new(0.0, 0.1, 0.0);
 
-			for event in event_pump.poll_iter() {
+			self.screen.events_loop().poll_events(|event| {
 				match event {
-					Event::Quit { .. } | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-						break 'main;
-					},
-					Event::KeyDown { keycode, .. } => {
-						let mut movement = Vector3::zero();
-						let mut rotation = Vector3::zero();
-						let sensitivity = 5.0;
-						match keycode {
-							Some(Keycode::W) => {
-								movement.y = -sensitivity;
+					WindowEvent { event: window_event, .. } => {
+						match window_event {
+							glutin::WindowEvent::Closed { .. } | glutin::WindowEvent::KeyboardInput(_, _, Some(glutin::VirtualKeyCode::Escape), _) => {
+								running = false
 							},
-							Some(Keycode::S) => {
-								movement.y = sensitivity;
-							},
-							Some(Keycode::A) => {
-								movement.x = sensitivity;
-							},
-							Some(Keycode::D) => {
-								movement.x = -sensitivity;
-							},
-							Some(Keycode::Q) => {
-								rotation.y = -sensitivity;
-							},
-							Some(Keycode::E) => {
-								rotation.y = sensitivity;
-							},
-							Some(Keycode::LCtrl) => {
-								movement.z = sensitivity;
-							},
-							Some(Keycode::LShift) => {
-								movement.z = -sensitivity;
-							}
-							_ => {}
+							// Event::KeyDown { keycode, .. } => {
+							// 	let mut movement = Vector3::zero();
+							// 	let mut rotation = Vector3::zero();
+							// 	let sensitivity = 5.0;
+							// 	match keycode {
+							// 		Some(Keycode::W) => {
+							// 			movement.y = -sensitivity;
+							// 		},
+							// 		Some(Keycode::S) => {
+							// 			movement.y = sensitivity;
+							// 		},
+							// 		Some(Keycode::A) => {
+							// 			movement.x = sensitivity;
+							// 		},
+							// 		Some(Keycode::D) => {
+							// 			movement.x = -sensitivity;
+							// 		},
+							// 		Some(Keycode::Q) => {
+							// 			rotation.y = -sensitivity;
+							// 		},
+							// 		Some(Keycode::E) => {
+							// 			rotation.y = sensitivity;
+							// 		},
+							// 		Some(Keycode::LCtrl) => {
+							// 			movement.z = sensitivity;
+							// 		},
+							// 		Some(Keycode::LShift) => {
+							// 			movement.z = -sensitivity;
+							// 		}
+							// 		_ => {}
+							// 	}
+							// 	camera_pos += movement;
+							// 	camera_rot += rotation;
+							_ => { }
 						}
-						camera_pos += movement;
-						camera_rot += rotation;
 					},
 					_ => { }
 				}
-			}
+			});
 
 			self.screen.renderer().clear();
 			

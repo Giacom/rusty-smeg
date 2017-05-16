@@ -48,6 +48,7 @@ impl App {
 
 	pub fn run(&mut self) {
 
+		let default_program =  self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
 		let sprite_material = {
 			let vertex_data = vec![
 				0.5, 0.5, 0.0, /* */ 1.0, 0.0,
@@ -61,9 +62,8 @@ impl App {
 
 			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
 			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
-			let program = self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
 
-			Material::new(vbo, vao, program, vertex_data, 5)
+			Material::new(vbo, vao, default_program, vertex_data, 5)
 		};
 
 		let box_material = {
@@ -113,9 +113,8 @@ impl App {
 
 			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
 			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
-			let program = self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
 
-			Material::new(vbo, vao, program, vertex_data, 5)
+			Material::new(vbo, vao, default_program, vertex_data, 5)
 		};
 
 

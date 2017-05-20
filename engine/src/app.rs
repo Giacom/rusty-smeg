@@ -6,6 +6,8 @@ use glutin;
 use std::f32;
 use image::GenericImage;
 
+use components;
+use node_tree::node::Node;
 use node_tree::scene::Scene;
 use graphics::material::Material;
 use graphics::screen::Screen;
@@ -48,93 +50,93 @@ impl App {
 
 	pub fn run(&mut self) {
 
-		let default_program =  self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
-		let sprite_material = {
-			let vertex_data = vec![
-				0.5, 0.5, 0.0, /* */ 1.0, 0.0,
-				-0.5, 0.5, 0.0, /* */ 0.0, 0.0,
-				-0.5, -0.5, 0.0, /* */ 0.0, 1.0,
+		// let default_program =  self.screen.renderer().generate_shader_program(VS_SRC, FS_SRC);
+		// let sprite_material = {
+		// 	let vertex_data = vec![
+		// 		0.5, 0.5, 0.0, /* */ 1.0, 0.0,
+		// 		-0.5, 0.5, 0.0, /* */ 0.0, 0.0,
+		// 		-0.5, -0.5, 0.0, /* */ 0.0, 1.0,
 
-				-0.5, -0.5, 0.0, /* */ 0.0, 1.0,
-				0.5, -0.5, 0.0, /* */ 1.0, 1.0,
-				0.5, 0.5, 0.0, /* */ 1.0, 0.0,
-			];
+		// 		-0.5, -0.5, 0.0, /* */ 0.0, 1.0,
+		// 		0.5, -0.5, 0.0, /* */ 1.0, 1.0,
+		// 		0.5, 0.5, 0.0, /* */ 1.0, 0.0,
+		// 	];
 
-			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
-			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
+		// 	let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
+		// 	let vao = self.screen.renderer().generate_vertex_array_object(vbo);
 
-			Material::new(vbo, vao, default_program, vertex_data, 5)
-		};
+		// 	Material::new(vbo, vao, default_program, vertex_data, 5)
+		// };
 
-		let box_material = {
-			let vertex_data = vec![
-				-0.5, -0.5, -0.5,  0.0, 0.0,
-				0.5, -0.5, -0.5,  1.0, 0.0,
-				0.5,  0.5, -0.5,  1.0, 1.0,
-				0.5,  0.5, -0.5,  1.0, 1.0,
-				-0.5,  0.5, -0.5,  0.0, 1.0,
-				-0.5, -0.5, -0.5,  0.0, 0.0,
+		// let box_material = {
+		// 	let vertex_data = vec![
+		// 		-0.5, -0.5, -0.5,  0.0, 0.0,
+		// 		0.5, -0.5, -0.5,  1.0, 0.0,
+		// 		0.5,  0.5, -0.5,  1.0, 1.0,
+		// 		0.5,  0.5, -0.5,  1.0, 1.0,
+		// 		-0.5,  0.5, -0.5,  0.0, 1.0,
+		// 		-0.5, -0.5, -0.5,  0.0, 0.0,
 
-				-0.5, -0.5,  0.5,  0.0, 0.0,
-				0.5, -0.5,  0.5,  1.0, 0.0,
-				0.5,  0.5,  0.5,  1.0, 1.0,
-				0.5,  0.5,  0.5,  1.0, 1.0,
-				-0.5,  0.5,  0.5,  0.0, 1.0,
-				-0.5, -0.5,  0.5,  0.0, 0.0,
+		// 		-0.5, -0.5,  0.5,  0.0, 0.0,
+		// 		0.5, -0.5,  0.5,  1.0, 0.0,
+		// 		0.5,  0.5,  0.5,  1.0, 1.0,
+		// 		0.5,  0.5,  0.5,  1.0, 1.0,
+		// 		-0.5,  0.5,  0.5,  0.0, 1.0,
+		// 		-0.5, -0.5,  0.5,  0.0, 0.0,
 
-				-0.5,  0.5,  0.5,  1.0, 0.0,
-				-0.5,  0.5, -0.5,  1.0, 1.0,
-				-0.5, -0.5, -0.5,  0.0, 1.0,
-				-0.5, -0.5, -0.5,  0.0, 1.0,
-				-0.5, -0.5,  0.5,  0.0, 0.0,
-				-0.5,  0.5,  0.5,  1.0, 0.0,
+		// 		-0.5,  0.5,  0.5,  1.0, 0.0,
+		// 		-0.5,  0.5, -0.5,  1.0, 1.0,
+		// 		-0.5, -0.5, -0.5,  0.0, 1.0,
+		// 		-0.5, -0.5, -0.5,  0.0, 1.0,
+		// 		-0.5, -0.5,  0.5,  0.0, 0.0,
+		// 		-0.5,  0.5,  0.5,  1.0, 0.0,
 
-				0.5,  0.5,  0.5,  1.0, 0.0,
-				0.5,  0.5, -0.5,  1.0, 1.0,
-				0.5, -0.5, -0.5,  0.0, 1.0,
-				0.5, -0.5, -0.5,  0.0, 1.0,
-				0.5, -0.5,  0.5,  0.0, 0.0,
-				0.5,  0.5,  0.5,  1.0, 0.0,
+		// 		0.5,  0.5,  0.5,  1.0, 0.0,
+		// 		0.5,  0.5, -0.5,  1.0, 1.0,
+		// 		0.5, -0.5, -0.5,  0.0, 1.0,
+		// 		0.5, -0.5, -0.5,  0.0, 1.0,
+		// 		0.5, -0.5,  0.5,  0.0, 0.0,
+		// 		0.5,  0.5,  0.5,  1.0, 0.0,
 
-				-0.5, -0.5, -0.5,  0.0, 1.0,
-				0.5, -0.5, -0.5,  1.0, 1.0,
-				0.5, -0.5,  0.5,  1.0, 0.0,
-				0.5, -0.5,  0.5,  1.0, 0.0,
-				-0.5, -0.5,  0.5,  0.0, 0.0,
-				-0.5, -0.5, -0.5,  0.0, 1.0,
+		// 		-0.5, -0.5, -0.5,  0.0, 1.0,
+		// 		0.5, -0.5, -0.5,  1.0, 1.0,
+		// 		0.5, -0.5,  0.5,  1.0, 0.0,
+		// 		0.5, -0.5,  0.5,  1.0, 0.0,
+		// 		-0.5, -0.5,  0.5,  0.0, 0.0,
+		// 		-0.5, -0.5, -0.5,  0.0, 1.0,
 
-				-0.5,  0.5, -0.5,  0.0, 1.0,
-				0.5,  0.5, -0.5,  1.0, 1.0,
-				0.5,  0.5,  0.5,  1.0, 0.0,
-				0.5,  0.5,  0.5,  1.0, 0.0,
-				-0.5,  0.5,  0.5,  0.0, 0.0,
-				-0.5,  0.5, -0.5,  0.0, 1.0
-			];
+		// 		-0.5,  0.5, -0.5,  0.0, 1.0,
+		// 		0.5,  0.5, -0.5,  1.0, 1.0,
+		// 		0.5,  0.5,  0.5,  1.0, 0.0,
+		// 		0.5,  0.5,  0.5,  1.0, 0.0,
+		// 		-0.5,  0.5,  0.5,  0.0, 0.0,
+		// 		-0.5,  0.5, -0.5,  0.0, 1.0
+		// 	];
 
-			let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
-			let vao = self.screen.renderer().generate_vertex_array_object(vbo);
+		// 	let vbo = self.screen.renderer().generate_vertex_buffer_object(&vertex_data);
+		// 	let vao = self.screen.renderer().generate_vertex_array_object(vbo);
 
-			Material::new(vbo, vao, default_program, vertex_data, 5)
-		};
+		// 	Material::new(vbo, vao, default_program, vertex_data, 5)
+		// };
 
 
-		let sprite_texture = {
-			let image = image::load_from_memory(include_bytes!("../res/duck.png")).unwrap();
-			let image_buffer = image.to_rgba();
-			let data = image_buffer.into_vec();
-			let (image_width, image_height) = image.dimensions();
+		// let sprite_texture = {
+		// 	let image = image::load_from_memory(include_bytes!("../res/duck.png")).unwrap();
+		// 	let image_buffer = image.to_rgba();
+		// 	let data = image_buffer.into_vec();
+		// 	let (image_width, image_height) = image.dimensions();
 
-			self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data)
-		};
+		// 	self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data)
+		// };
 
-		let box_texture = {
-			let image = image::load_from_memory(include_bytes!("../res/duck_opaque.jpg")).unwrap();
-			let image_buffer = image.to_rgba();
-			let data = image_buffer.into_vec();
-			let (image_width, image_height) = image.dimensions();
+		// let box_texture = {
+		// 	let image = image::load_from_memory(include_bytes!("../res/duck_opaque.jpg")).unwrap();
+		// 	let image_buffer = image.to_rgba();
+		// 	let data = image_buffer.into_vec();
+		// 	let (image_width, image_height) = image.dimensions();
 
-			self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data)
-		};
+		// 	self.screen.renderer().generate_texture(image_width as i32, image_height as i32, data)
+		// };
 
 		self.screen.renderer().clear_colour(0.39, 0.58, 0.92);
 
@@ -156,18 +158,50 @@ impl App {
 
 		let mut view = Matrix4::translation(camera_pos);
 
-		let cube_positions = {
-			let mut cube_positions = vec![];
-			let size = 2;
-			for x in -size..size {
-				for y in -size..size {
-					for z in -size..size {
-						cube_positions.push(Vector3::new(x as f32, y as f32, z as f32) * 32.0);
-					}
-				}
+		let mut scene = Scene::new();
+		let node_id = scene.new_node();
+		{
+			let sprite_renderer = components::sprite_renderer::SpriteRenderer { data: 42 };
+			scene.add_component_to_node(node_id, sprite_renderer);
+
+			let sprite_renderer = components::sprite_renderer::SpriteRenderer { data: 105 };
+			scene.add_component_to_node(node_id, sprite_renderer);
+		}
+
+		{
+			let mut sprite_renderer = scene.get_component_type_from_node::<components::sprite_renderer::SpriteRenderer>(node_id).unwrap();
+			sprite_renderer.data = 100;
+		}
+
+		{
+			let component_id = scene.get_component_type_id_from_node::<components::sprite_renderer::SpriteRenderer>(node_id).unwrap();
+			scene.remove_component_id_from_node(node_id, component_id);
+		}
+
+		{
+			let sprite_renderer = scene.get_component_type_from_node::<components::sprite_renderer::SpriteRenderer>(node_id);
+			match sprite_renderer {
+				Some(s) => { println!("{}", s.data) },
+				None => { println!("NONE") }
 			}
-			cube_positions
-		};
+		}
+
+		{
+			scene.remove_node(node_id);
+		}
+
+		// let cube_positions = {
+		// 	let mut cube_positions = vec![];
+		// 	let size = 2;
+		// 	for x in -size..size {
+		// 		for y in -size..size {
+		// 			for z in -size..size {
+		// 				cube_positions.push(Vector3::new(x as f32, y as f32, z as f32) * 32.0);
+		// 			}
+		// 		}
+		// 	}
+		// 	cube_positions
+		// };
 
 
 		let mut running = true;
@@ -179,7 +213,7 @@ impl App {
 			view = Matrix4::translation_and_rotation(camera_pos, camera_rot);
 			// println!("Pos: {:?} - Rot: {:?}", camera_pos, camera_rot);
 
-			camera_rot += Vector3::new(0.0, 0.1, 0.0);
+			// camera_rot += Vector3::new(0.0, 0.1, 0.0);
 
 			self.screen.events_loop().poll_events(|event| {
 				match event {
@@ -228,6 +262,9 @@ impl App {
 				}
 			});
 
+			// Update Calls
+
+
 			self.screen.renderer().clear();
 			
 			// for cube_position in &cube_positions {
@@ -235,8 +272,9 @@ impl App {
 			// 	self.screen.renderer().draw_material(&box_material, box_texture, &perspective, &view, &box_model);
 			// }
 
-			self.screen.renderer().draw_material(&sprite_material, sprite_texture, &perspective, &view, &model);
-			self.screen.renderer().draw_material(&sprite_material, sprite_texture, &perspective, &view, &model2);
+			// self.screen.renderer().draw_material(&sprite_material, sprite_texture, &perspective, &view, &model);
+			// self.screen.renderer().draw_material(&sprite_material, sprite_texture, &perspective, &view, &model2);
+
 
 			self.screen.swap_buffer();
 		}

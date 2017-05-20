@@ -143,21 +143,21 @@ impl App {
 
 		let position = Vector3::zero();
 
-		// let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 100.0, 0.1);
-		let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 1000.0, 0.1);;
+		let perspective = Matrix4::ortho(screen_half.x, -screen_half.x, screen_half.y, -screen_half.y, 1000.0, 0.1);
+		// let perspective = Matrix4::perspective(90.0, screen_width as f32 / screen_height as f32, 1000.0, 0.1);;
 
 		let model_size = Vector3::new(32.0, 32.0, 32.0);
 		
 		let model = Matrix4::translate_and_scale(position, model_size);
 		let model2 = Matrix4::translate_and_scale(Vector3::new(100.0, 50.0, -1.0), model_size);
 
-		let mut camera_pos = Vector3::new(0.0, 0.0, 500.0);
+		let mut camera_pos = Vector3::new(0.0, 0.0, 150.0);
 		let mut camera_rot = Vector3::new(0.0, 0.0, 0.0);
 
 		let mut view = Matrix4::translation(camera_pos);
 
-		let mut cube_positions = vec![];
-		{
+		let cube_positions = {
+			let mut cube_positions = vec![];
 			let size = 2;
 			for x in -size..size {
 				for y in -size..size {
@@ -166,7 +166,8 @@ impl App {
 					}
 				}
 			}
-		}
+			cube_positions
+		};
 
 
 		let mut running = true;
@@ -229,13 +230,13 @@ impl App {
 
 			self.screen.renderer().clear();
 			
-			for cube_position in &cube_positions {
-				let box_model = Matrix4::translate_and_scale(*cube_position, model_size);
-				self.screen.renderer().draw(&box_material, box_texture, &perspective, &view, &box_model);
-			}
+			// for cube_position in &cube_positions {
+			// 	let box_model = Matrix4::translate_and_scale(*cube_position, model_size);
+			// 	self.screen.renderer().draw_material(&box_material, box_texture, &perspective, &view, &box_model);
+			// }
 
-			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model);
-			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model2);
+			self.screen.renderer().draw_material(&sprite_material, sprite_texture, &perspective, &view, &model);
+			self.screen.renderer().draw_material(&sprite_material, sprite_texture, &perspective, &view, &model2);
 
 			self.screen.swap_buffer();
 		}

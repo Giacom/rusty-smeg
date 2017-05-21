@@ -162,33 +162,32 @@ impl App {
 		let node_id = scene.new_node();
 		{
 			let sprite_renderer = components::sprite_renderer::SpriteRenderer { data: 42 };
-			scene.add_component_to_node(node_id, sprite_renderer);
+			scene.get_node_as_mut(node_id).add_component(sprite_renderer);
 
 			let sprite_renderer = components::sprite_renderer::SpriteRenderer { data: 105 };
-			scene.add_component_to_node(node_id, sprite_renderer);
+			scene.get_node_as_mut(node_id).add_component(sprite_renderer);
 		}
 
 		{
-			let mut sprite_renderer = scene.get_component_type_from_node::<components::sprite_renderer::SpriteRenderer>(node_id).unwrap();
+			let mut sprite_renderer = scene.get_node_as_mut(node_id).get_component_mut::<components::sprite_renderer::SpriteRenderer>().unwrap();
 			sprite_renderer.data = 100;
 		}
 
 		{
-			let component_id = scene.get_component_type_id_from_node::<components::sprite_renderer::SpriteRenderer>(node_id).unwrap();
-			scene.remove_component_id_from_node(node_id, component_id);
+			scene.get_node_as_mut(node_id).remove_component_at(0);
 		}
 
 		{
-			let sprite_renderer = scene.get_component_type_from_node::<components::sprite_renderer::SpriteRenderer>(node_id);
+			let sprite_renderer = scene.get_node_as_mut(node_id).get_component::<components::sprite_renderer::SpriteRenderer>();
 			match sprite_renderer {
 				Some(s) => { println!("{}", s.data) },
 				None => { println!("NONE") }
 			}
 		}
 
-		{
-			scene.remove_node(node_id);
-		}
+		// {
+		// 	scene.remove_node(node_id);
+		// }
 
 		// let cube_positions = {
 		// 	let mut cube_positions = vec![];

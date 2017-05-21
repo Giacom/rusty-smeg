@@ -1,23 +1,16 @@
-use std::any::{Any, TypeId};
 use node_tree::node::{Node, NodeId};
-use node_tree::component::{Component, ComponentId};
+use node_tree::component::{Component};
 
 pub struct Scene {
 	 nodes: Vec<Option<Node>>,
-	 components: Vec<Option<Box<Any>>>,
-
 	 free_node_space: Vec<NodeId>,
-	 free_component_space: Vec<ComponentId>
 }
 
 impl Scene {
 	pub fn new() -> Scene {
 		Scene {
 			nodes: vec![],
-			components: vec![],
-
 			free_node_space: vec![],
-			free_component_space: vec![]
 		}
 	}
 
@@ -49,20 +42,6 @@ impl Scene {
 
 	pub fn remove_node(&mut self, id: NodeId) {
 		if self.nodes[id.0].is_some() {
-
-			let mut components = vec![];
-			{
-				let mut node = self.nodes.get_mut(id.0).unwrap().as_mut().unwrap();
-				for component in node.components() {
-					components.push(*component);
-				}
-				node.components_as_mut().clear();
-			};
-
-			for component in components {
-				self.remove_component(component);
-			}
-
 			self.nodes[id.0] = None;
 			self.free_node_space.push(id);
 			println!("Removed node {:?}", id)
@@ -75,6 +54,7 @@ impl Scene {
 		Components
 	*/
 
+/*
 	#[inline(always)]
 	pub fn add_component_to_node<C: Component + 'static>(&mut self, node_id: NodeId, component: C) -> ComponentId {
 		self.add_boxed_component(node_id, Box::new(component), TypeId::of::<C>())
@@ -158,4 +138,5 @@ impl Scene {
 			println!("ERROR: Attempted to remove component {:?} that was not active.", component_id);
 		}
 	}
+	*/
 }

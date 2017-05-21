@@ -1,16 +1,18 @@
 use std::rc::Rc;
 
-use std::any::TypeId;
-use node_tree::node::Node;
+use std::any::{Any, TypeId};
+use node_tree::node::NodeId;
 use services::service::ServiceContainer;
 use graphics::opengl::renderer::OpenGLRenderer;
 
-#[derive(Debug, Copy, Clone)]
-// TODO: Add CheckSum to make sure that a component we retrieve is the same as we expected
-pub struct ComponentId(pub usize, pub TypeId);
+#[derive(Debug)]
+pub struct ComponentPair {
+	pub component: Box<Any>,
+	pub type_id: TypeId
+}
 
 pub trait Component {
-	fn start(&mut self, node: &Rc<Node>) { }
-	fn update(&mut self, node: &Rc<Node>, services: &ServiceContainer) { }
-	fn draw(&self, node: &Rc<Node>, renderer: &OpenGLRenderer) { }
+	fn start(&mut self, node: NodeId) { }
+	fn update(&mut self, node: NodeId, services: &ServiceContainer) { }
+	fn draw(&self, node: NodeId, renderer: &OpenGLRenderer) { }
 }

@@ -6,7 +6,11 @@ use glutin;
 use std::f32;
 use image::GenericImage;
 
+use node_tree::component::Component;
 use node_tree::scene::Scene;
+use node_tree::node::Node;
+use components::sprite_renderer::SpriteRenderer;
+
 use graphics::material::Material;
 use graphics::screen::Screen;
 use math::matrix4::Matrix4;
@@ -174,9 +178,28 @@ impl App {
 			}
 		}
 
+		self.active_scene = {
+			let mut scene = Scene::new_empty();
+			scene.set_root_node({
+				let mut node = Node::new_root();
+				let component = SpriteRenderer::new(1);
+
+				node.add_component(component);
+				Some(node)
+			});
+
+			Some(scene)
+		};
+
 
 		let mut running = true;
 		while running {
+
+			if let Some(ref mut scene) = self.active_scene {
+				let mut root_node = scene.get_root_node().unwrap();
+				let component = root_node.get_component(0);
+				component.borrow_mut().update();
+			}
 
 			self.services.get::<Time>().ticks += 1;
 

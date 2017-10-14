@@ -58,7 +58,7 @@ impl OpenGLRenderer {
 
 	// Draw
 
-	pub fn draw(&self, material: &Material, texture: TextureID, perspective: &Matrix4, view: &Matrix4, model: &Matrix4) {
+	pub fn draw_material(&self, material: &Material, texture: TextureID, perspective: &Matrix4, view: &Matrix4, model: &Matrix4) {
 		unsafe {
 			gl::ActiveTexture(gl::TEXTURE0);
 

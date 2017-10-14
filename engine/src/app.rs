@@ -260,7 +260,7 @@ impl App {
 			
 			for cube_position in &cube_positions {
 				let box_model = Matrix4::translate_and_scale(*cube_position, model_size);
-				self.screen.renderer().draw(&box_material, box_texture, &perspective, &view, &box_model);
+				self.screen.renderer().draw_material(&box_material, box_texture, &perspective, &view, &box_model);
 			}
 
 			// self.screen.renderer().draw(&sprite_material, sprite_texture, &perspective, &view, &model);
